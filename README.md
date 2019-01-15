@@ -65,4 +65,4 @@ Open a "Command Prompt" window and type in:
 ```python
 cd %YOURDIRECTORY%/SC2ParasiteReplayDecoder-master
 python main.py "PATHTOREPLAYFILE.SC2Replay"
-```python
+```
