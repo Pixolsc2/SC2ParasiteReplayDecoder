@@ -249,7 +249,11 @@ def get_game_events(data_json_,list_player_name):
 
 
 def main():
-    file_sc2replay = sys.argv[1]
+    try:
+        file_sc2replay = sys.argv[1]
+    except:
+        print('No replay file.')
+        return
     file_json = r'tmp.ndjson'
     str_cmd_json = r'python ".\s2protocol-master\s2protocol\s2_cli.py" --all --ndjson "' + file_sc2replay + '" > "' + file_json + '"'
     subprocess.check_call(str_cmd_json, shell=True)
