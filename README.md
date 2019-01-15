@@ -1,7 +1,7 @@
 # Required Software
 Python 2.7 with numpy (https://www.anaconda.com/download/)
 
-s2protocol (https://github.com/Blizzard/s2protocol/issues)
+s2protocol (https://github.com/Blizzard/s2protocol/)
 
 sc2reader (https://github.com/ggtracker/sc2reader)
 
