@@ -1,3 +1,18 @@
+# What does this do?
+This decodes .SC2Replay files for the game Parasite Zeta so that you may quickly extract a list of events without going through SC2's Replay. It can currently output the following:
+* Player karma / games played / handles
+* Assignments of Alien Host / Android / Psion
+* Explosions
+* Explosions near gas tanks on levels 1-6
+* Items used near gas tank
+* Remote mine placement / despawns (explosion or defused)
+* Vent radiator destroyed (cannot track who destroyed it)
+* Crab infest target and source
+* Player spawning
+* Player death
+* Player leaving the game
+
+
 # Required Software
 Python 2.7 with numpy (https://www.anaconda.com/download/)
 
