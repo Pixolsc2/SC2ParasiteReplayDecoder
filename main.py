@@ -24,7 +24,7 @@ def get_bank_info(data_json_):
 
 
 
-def get_game_events(data_json_,list_player_name):
+def get_game_events(data_json_,list_player_name,replay):
     output = []
     death_tracker = [None] * 12
     remotemine_id_tracker = []
@@ -36,17 +36,18 @@ def get_game_events(data_json_,list_player_name):
     tank_loc_blkcoord = [[221.3, 48.4], [204.0, 232.3], [196.6, 169.9], [232.4, 77.0], [214.9, 115.7],
                          [231.2, 203.5]]  # y,x
 
+    station_life_modules_mtags = [86769665, 86245377, 85721089, 85458945, 85983233, 86507521]
+    bunker_life_modules_mtags = [308543489, 267911169]
+
     def check_dist(yx1, yx2):
         return np.sqrt(np.square(yx1[0] - yx2[0]) + np.square(yx1[1] - yx2[1]))
 
     for datum in data_json_:
         if '_event' in datum.keys() and datum['_event'] == 'NNet.Replay.Tracker.SUnitBornEvent' and datum[
             'm_unitTypeName'] == 'Marine':
-            # print(datum['m_upkeepPlayerId'])
-            # print(datum['m_unitTagIndex'])
             death_tracker[datum['m_upkeepPlayerId'] - 1] = datum['m_unitTagIndex']
 
-        # track item use near gas tanks
+        # track item use near gas tanks (experimental since ability link value may change each patch)
         if 'm_abil' in datum.keys() and datum['m_abil'] and 'm_abilLink' in datum['m_abil'].keys() and datum['m_abil'][
             'm_abilLink'] == 528 and datum['m_abil']['m_abilCmdIndex'] == 4:
             id_src = datum['_userid']['m_userId']  # for some reason, this one is already 0-based.
@@ -81,16 +82,12 @@ def get_game_events(data_json_,list_player_name):
             remotemine_id_tracker.append(datum['m_unitTagIndex'])
             remotemine_owner_tracker.append(id_dst)
             output.append([time_gameloop, '[%02d:%02d] %s placed a remote mine' % (time_min, time_sec, name_dst)])
-            # print(remotemine_id_tracker)
-            # print(remotemine_owner_tracker)
 
         # Track remote mine detonations
         if '_event' in datum.keys() and datum['_event'] == 'NNet.Replay.Tracker.SUnitDiedEvent':
             if datum['m_unitTagIndex'] in remotemine_id_tracker:
                 idx = np.where([datum['m_unitTagIndex'] == tracker_enum for tracker_enum in remotemine_id_tracker])[0][
                     0]
-                # print(datum['m_unitTagIndex'])
-                # print(idx)
                 id_dst = remotemine_owner_tracker[idx]
                 name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
                 time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
@@ -124,6 +121,9 @@ def get_game_events(data_json_,list_player_name):
                     else:
                         tank_tracker.append([time_gameloop, time_min, time_sec, tank_num + 1, 1])
                     break
+
+
+
 
         # Track fire from explosions
         if '_event' in datum.keys() and datum['_event'] == "NNet.Replay.Tracker.SUnitBornEvent" and datum[
@@ -168,6 +168,7 @@ def get_game_events(data_json_,list_player_name):
                 output.append(
                     [time_gameloop, '[%02d:%02d] %s was killed by %s' % (time_min, time_sec, name_dst, name_src)])
 
+        # Track Player Leaves
         if '_event' in datum.keys() and datum['_event'] == 'NNet.Game.SGameUserLeaveEvent':
             id_dst = datum['_userid']['m_userId']  # for some reason, this one is already 0-based.
             name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
@@ -178,6 +179,7 @@ def get_game_events(data_json_,list_player_name):
             output.append(
                 [time_gameloop, '[%02d:%02d] %s has left the game (%s)' % (time_min, time_sec, name_dst, leave_reason)])
 
+        # Check who is Psion
         if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'PlayerIsPsion':
             id_dst = datum['m_playerId'] - 1
             name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
@@ -186,6 +188,16 @@ def get_game_events(data_json_,list_player_name):
             time_gameloop = datum['_gameloop']
             output.append([time_gameloop, '[%02d:%02d] %s is Psion' % (time_min, time_sec, name_dst)])
 
+        # Check when Psion goes evil
+        if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'Haveanegativepsionicalignment':
+            id_dst = datum['m_playerId'] - 1
+            name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
+            time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
+            time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
+            time_gameloop = datum['_gameloop']
+            output.append([time_gameloop, '[%02d:%02d] %s is now an EVIL PSION' % (time_min, time_sec, name_dst)])
+
+        # Check who is Android
         if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'PlayerisAndroid':
             id_dst = datum['m_playerId'] - 1
             name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
@@ -194,6 +206,21 @@ def get_game_events(data_json_,list_player_name):
             time_gameloop = datum['_gameloop']
             output.append([time_gameloop, '[%02d:%02d] %s is Android' % (time_min, time_sec, name_dst)])
 
+        # Check Core Directive Assignment (experimental since there's no upgrade-tag for evil vs good role)
+        if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'COREDIRECTIVE':
+            id_dst = datum['m_playerId'] - 1
+            name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
+            time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
+            time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
+            time_gameloop = datum['_gameloop']
+            if time_gameloop == 3088:
+                output.append([time_gameloop, '[%02d:%02d] %s received GOOD DIRECTIVE: OBEDIENCE' % (time_min, time_sec, name_dst)])
+            elif time_gameloop == 3072:
+                output.append([time_gameloop, '[%02d:%02d] %s received EVIL DIRECTIVE: THE TRUE END HAS COME' % (time_min, time_sec, name_dst)])
+            else:
+                output.append([time_gameloop, '[%02d:%02d] %s received an UNKNOWN DIRECTIVE (debug code: %d)' % (time_min, time_sec, name_dst, time_gameloop)])
+
+        # Check who is Alien Host/Spawn
         if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'CanUseGeneModAlien':
             id_dst = datum['m_playerId'] - 1
             name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
@@ -205,20 +232,36 @@ def get_game_events(data_json_,list_player_name):
             else:
                 output.append([time_gameloop, '[%02d:%02d] %s is now an Alien Spawn' % (time_min, time_sec, name_dst)])
 
-        if 'm_abil' in datum.keys() and datum['m_abil'] and 'm_abilLink' in datum['m_abil'].keys() and (
-                datum['m_abil']['m_abilLink'] == 2478 or datum['m_abil']['m_abilLink'] == 2474):
-            id_dst = datum['m_data']['TargetUnit']['m_snapshotControlPlayerId'] - 1
-            id_src = datum['_userid']['m_userId']  # for some reason, this one is already 0-based.
-            if id_dst >= 0 and id_dst < len(list_player_name):
-                name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
-            else:
-                name_dst = 'Misc. Obj.'
-            name_src = list_player_name[id_src] + ' (#%02d)'%(1+id_src)
-            time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
-            time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
-            time_gameloop = datum['_gameloop']
-            output.append(
-                [time_gameloop, '[%02d:%02d] %s was crabbed by %s' % (time_min, time_sec, name_dst, name_src)])
+        # Check who crabbed who (experimental since ability link value may change each patch)
+        list_crab_id = [2477, 2478, 2479, 2473, 2474, 2475]
+        try:
+            if 'm_abil' in datum.keys() and datum['m_abil'] and 'm_abilLink' in datum['m_abil'].keys() and (datum['m_abil']['m_abilLink'] in list_crab_id):
+                id_dst = datum['m_data']['TargetUnit']['m_snapshotControlPlayerId'] - 1
+                id_src = datum['_userid']['m_userId']  # for some reason, this one is already 0-based.
+                id_dst_is_player = id_dst >= 0 and id_dst < len(list_player_name)
+                mtag = datum['m_data']['TargetUnit']['m_tag']
+
+                name_src = list_player_name[id_src] + ' (#%02d)'%(1+id_src)
+                time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
+                time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
+                time_gameloop = datum['_gameloop']
+
+                if id_dst_is_player:
+                    name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
+                    output.append([time_gameloop, '[%02d:%02d] %s was crabbed by %s' % (time_min, time_sec, name_dst, name_src)])
+                elif not id_dst_is_player and mtag in station_life_modules_mtags:
+                    module_num = np.where([mtag==mtag_enum for mtag_enum in station_life_modules_mtags])[0][0]+1
+                    output.append([time_gameloop, '[%02d:%02d] Station module #%d was infested by %s' % (time_min, time_sec, module_num, name_src)])
+                elif not id_dst_is_player and mtag in bunker_life_modules_mtags:
+                    module_num = np.where([mtag==mtag_enum for mtag_enum in bunker_life_modules_mtags])[0][0]+1
+                    output.append([time_gameloop, '[%02d:%02d] Bunker module #%d was infested by %s' % (time_min, time_sec, module_num, name_src)])
+                else:
+                    name_dst = 'Misc. Obj.'
+        except:
+            pass
+            
+
+            
 
     for ii in range(len(debri_fire_tracker)):
         output.append([debri_fire_tracker[ii][0], '[%02d:%02d] An explosion has occurred (%d debris formed)' % (
@@ -228,12 +271,81 @@ def get_game_events(data_json_,list_player_name):
         output.append([tank_tracker[ii][0], '[%02d:%02d] Tank #%d has an explosion nearby (%d debris formed)' % (
         tank_tracker[ii][1], tank_tracker[ii][2], tank_tracker[ii][3], tank_tracker[ii][4])])
 
+
+
+
+    # Track mass targetting
+    list_event_bridge_target = [[x.frame, x.ability_link, x.player.sid] for x in [replay.events[idx] for idx in
+                                            np.where([event.name == 'BasicCommandEvent' for event in replay.events])[0]]
+                                if x.ability_link >= 2710 and x.ability_link <= 2739 and x.command_index == 0]
+
+    mass_target_min_req = 4
+    for player_id in range(len(list_player_name)):
+        list_event_cur = [event for event in list_event_bridge_target if event[2] == player_id]
+        if len(list_event_cur) >= mass_target_min_req:
+            targetting_tracker = []
+            for event in list_event_cur:
+                time_gameloop = event[0]
+                time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+                time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+                if len(targetting_tracker) > 0 and abs(time_gameloop - targetting_tracker[-1][0]) < (16*10):
+                    targetting_tracker[-1][-1] = targetting_tracker [-1][-1] + 1
+                else:
+                    targetting_tracker.append([time_gameloop, time_min, time_sec, 1])
+
+            name_src = list_player_name[player_id] + ' (#%02d)' % (1 + id_src)
+            for ii in range(len(targetting_tracker)):
+                if targetting_tracker[ii][-1] >= mass_target_min_req:
+                    output.append([targetting_tracker[ii][0], '[%02d:%02d] %s has mass target toggled (cnt: %d) ' % (
+                        targetting_tracker[ii][1], targetting_tracker[ii][2], name_src, targetting_tracker[ii][3])])
+
+    # Track Power Links
+    powerlink_left_loc = (48.0, 141.0, 40544L)
+    powerlink_right_loc = (70.0, 141.0, 40544L)
+    list_event_powerlink_click = [[x.frame, x.player.sid, x.location[0:2]] for x in replay.events if
+                                  x.name == 'UpdateTargetUnitCommandEvent' and x.target_unit_id != 0 and (
+                                  x.location == powerlink_left_loc or x.location == powerlink_right_loc)]
+
+    list_event_powerlink_off = [[event.frame, event.unit.location] for event in replay.events if
+                                event.name == 'UnitTypeChangeEvent' and event.unit_type_name == 'PsiDisintegratorPowerLinkOff']
+
+    for event in list_event_powerlink_off:
+        time_gameloop = event[0]
+        time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+        time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+        powerlink_loc = event[1]
+        if powerlink_loc == powerlink_left_loc[:2]:
+            powerlink_loc_str = 'Left'
+        elif powerlink_loc == powerlink_right_loc[:2]:
+            powerlink_loc_str = 'Right'
+        else:
+            powerlink_loc_str = 'Unknown'
+        list_click_events = [click_event for click_event in list_event_powerlink_click if
+                             click_event[0] >= time_gameloop - 100 and click_event[0] < time_gameloop - 5 and
+                             click_event[2] == powerlink_loc]
+        if len(list_click_events) > 0:
+            list_id_src = list(set([click_event[1] for click_event in list_click_events]))
+            for id_num in range(len(list_id_src)):
+                id_src = list_id_src[id_num]
+                if id_num > 0:
+                    name_src = name_src + ' or ' + list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
+                else:
+                    name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
+            output.append([time_gameloop, '[%02d:%02d] %s turned off %s Power Link' % (
+            time_min, time_sec, name_src, powerlink_loc_str)])
+
+
+
+
+
+
+
+
+
+
     output = [output[idx][1] for idx in np.argsort(np.array([out[0] for out in output]))]
 
     return output
-
-
-
 
 
 
@@ -264,24 +376,52 @@ def main():
     num_players = 12
 
     replay = sc2reader.load_replay(file_sc2replay, load_map=True)
+
+    # Get player information
     list_player_handles = [data['toon_handle'] for data in replay.raw_data['replay.initData']['lobby_state']['slots'][:12]]
     list_player_clan = [data['clan_tag'] for data in replay.raw_data['replay.initData']['user_initial_data'][:12]]
     list_player_name = [str(data['name']) for data in replay.raw_data['replay.initData']['user_initial_data'][:12]]
     list_player_karma, list_player_games = get_bank_info(data_json)
 
-    output = get_game_events(data_json,list_player_name)
+    # Get player colors
+    list_color_map = ['red', 'blue', 'teal', 'purple', 'yellow', 'oj', 'green', 'lp', 'N/A', 'grey', 'dg', 'brown',
+                      'N/A', 'black', 'pink']
+    list_player_color_id = [slot['colorPref'] for slot in replay.raw_data['replay.initData']['lobby_state']['slots']][
+                           :12]
+    list_player_color_txt = [list_color_map[id - 1] for id in list_player_color_id]
+
+    # Get role assignments
+    key_role = {}
+    key_role['CaptainUpgrade'] = 'Cap'
+    key_role['ChiefMaitanenceOfficerUpgrade2222'] = 'Maj'
+    key_role['ChiefMaitanenceOfficerUpgrade22222'] = 'Sgt'
+    key_role['ChiefMaitanenceOfficerUpgrade222222'] = 'Doc'
+    key_role['ChiefMaitanenceOfficerUpgrade2222222'] = 'LT'
+    key_role['ChiefMaitanenceOfficerUpgrade2222223'] = 'Eng'
+    key_role['SecurityOfficer'] = 'Off'
+    key_role['ChiefMaitanenceOfficerUpgrade2'] = 'SG'
+    key_role['ChiefMaitanenceOfficerUpgrade22'] = 'DSM'
+
+    list_player_role = ['Unknown'] * 12
+    list_event_role_assn = [event for event in replay.events if
+                            event.name == 'UpgradeCompleteEvent' and event.upgrade_type_name in key_role.keys()]
+    for event in list_event_role_assn:
+        list_player_role[event.player.sid] = key_role[event.upgrade_type_name]
+
+
+    output = get_game_events(data_json,list_player_name,replay)
 
     print('\nPlayer List:')
     for ii in range(num_players):
         if ii>0 and ii%3 == 0:
             print('')
         if len(list_player_clan[ii]) > 0:
-            print('[#%2d] [K: %3s] [G: %4s] [%-15s] <%s> %s' % (ii+1, list_player_karma[ii], list_player_games[ii],
-                                                             list_player_handles[ii], list_player_clan[ii],
+            print('[#%2d] [K: %3s] [G: %4s] [%-15s] [%3s] [%6s] <%s> %s' % (ii+1, list_player_karma[ii], list_player_games[ii],
+                                                             list_player_handles[ii], list_player_role[ii], list_player_color_txt[ii], list_player_clan[ii],
                                                              list_player_name[ii]))
         else:
-            print('[#%2d] [K: %3s] [G: %4s] [%-15s] %s' % (ii+1, list_player_karma[ii], list_player_games[ii],
-                                                          list_player_handles[ii], list_player_name[ii]))
+            print('[#%2d] [K: %3s] [G: %4s] [%-15s] [%3s] [%6s] %s' % (ii+1, list_player_karma[ii], list_player_games[ii],
+                                                                list_player_handles[ii], list_player_role[ii], list_player_color_txt[ii], list_player_name[ii]))
 
     print('\nEvents:')
     for ii in range(len(output)):
