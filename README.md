@@ -12,6 +12,15 @@ This decodes .SC2Replay files for the game Parasite Zeta so that you may quickly
 * Player death
 * Player leaving the game
 
+### Recently Added:
+* Player role / color
+* Android directive (good or evil)
+* Module infestation
+* Mass-Targetting (at least 4 players are targetted/un-targetted at bridge console)
+* Turning Off Power Link
+
+
+
 
 # Required Software
 Python 2.7 with numpy (https://www.anaconda.com/download/)
