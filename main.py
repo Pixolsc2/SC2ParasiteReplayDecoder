@@ -380,7 +380,8 @@ def main():
     # Get player information
     list_player_handles = [data['toon_handle'] for data in replay.raw_data['replay.initData']['lobby_state']['slots'][:12]]
     list_player_clan = [data['clan_tag'] for data in replay.raw_data['replay.initData']['user_initial_data'][:12]]
-    list_player_name = [str(data['name']) for data in replay.raw_data['replay.initData']['user_initial_data'][:12]]
+    # for data in replay.raw_data['replay.initData']['user_initial_data'][:12]:
+    list_player_name = [data['name'] for data in replay.raw_data['replay.initData']['user_initial_data'][:12]]
     list_player_karma, list_player_games = get_bank_info(data_json)
 
     # Get player colors
