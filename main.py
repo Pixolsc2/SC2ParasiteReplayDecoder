@@ -300,11 +300,11 @@ def get_game_events(data_json_,list_player_name,replay):
                         targetting_tracker[ii][1], targetting_tracker[ii][2], name_src, targetting_tracker[ii][3])])
 
     # Track Power Links
-    powerlink_left_loc = (48.0, 141.0, 40544L)
-    powerlink_right_loc = (70.0, 141.0, 40544L)
+    powerlink_left_loc = (48.0, 141.0)
+    powerlink_right_loc = (70.0, 141.0)
     list_event_powerlink_click = [[x.frame, x.player.sid, x.location[0:2]] for x in replay.events if
                                   x.name == 'UpdateTargetUnitCommandEvent' and x.target_unit_id != 0 and (
-                                  x.location == powerlink_left_loc or x.location == powerlink_right_loc)]
+                                  x.location[:2] == powerlink_left_loc or x.location[:2] == powerlink_right_loc)]
 
     list_event_powerlink_off = [[event.frame, event.unit.location] for event in replay.events if
                                 event.name == 'UnitTypeChangeEvent' and event.unit_type_name == 'PsiDisintegratorPowerLinkOff']
