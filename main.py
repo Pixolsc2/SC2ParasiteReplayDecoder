@@ -148,25 +148,25 @@ def get_game_events(data_json_,list_player_name,replay):
                         tank_tracker.append([time_gameloop, time_min, time_sec, tank_num + 1, 1])
                     break
 
-        # Track player deaths
-        if '_event' in datum.keys() and datum['_event'] == 'NNet.Replay.Tracker.SUnitDiedEvent':
-            if datum['m_unitTagIndex'] in death_tracker:
-                id_dst = np.where([datum['m_unitTagIndex'] == tracker_enum for tracker_enum in death_tracker])[0][0]
-                death_tracker[id_dst] = None
-                name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
-                time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
-                time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
-                time_gameloop = datum['_gameloop']
-                if datum['m_killerPlayerId'] is not None:
-                    id_src = datum['m_killerPlayerId'] - 1
-                    if id_src >= 0 and id_src <= 11:
-                        name_src = list_player_name[id_src] + ' (#%02d)'%(1+id_src)
-                    else:
-                        name_src = 'Misc. Obj.'
-                else:
-                    name_src = 'Misc. Obj.'
-                output.append(
-                    [time_gameloop, '[%02d:%02d] %s was killed by %s' % (time_min, time_sec, name_dst, name_src)])
+        # # Track player deaths
+        # if '_event' in datum.keys() and datum['_event'] == 'NNet.Replay.Tracker.SUnitDiedEvent':
+        #     if datum['m_unitTagIndex'] in death_tracker:
+        #         id_dst = np.where([datum['m_unitTagIndex'] == tracker_enum for tracker_enum in death_tracker])[0][0]
+        #         death_tracker[id_dst] = None
+        #         name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
+        #         time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
+        #         time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
+        #         time_gameloop = datum['_gameloop']
+        #         if datum['m_killerPlayerId'] is not None:
+        #             id_src = datum['m_killerPlayerId'] - 1
+        #             if id_src >= 0 and id_src <= 11:
+        #                 name_src = list_player_name[id_src] + ' (#%02d)'%(1+id_src)
+        #             else:
+        #                 name_src = 'Misc. Obj.'
+        #         else:
+        #             name_src = 'Misc. Obj.'
+        #         output.append(
+        #             [time_gameloop, '[%02d:%02d] %s was killed by %s' % (time_min, time_sec, name_dst, name_src)])
 
         # Track Player Leaves
         if '_event' in datum.keys() and datum['_event'] == 'NNet.Game.SGameUserLeaveEvent':
@@ -334,14 +334,119 @@ def get_game_events(data_json_,list_player_name,replay):
             output.append([time_gameloop, '[%02d:%02d] %s turned off %s Power Link' % (
             time_min, time_sec, name_src, powerlink_loc_str)])
 
+    # Track Player Deaths
+    list_atk_events = [[x.frame, x.player.sid, x.ability_type_data['upkeep_player_id'] - 1] for x in
+                       [replay.events[idx] for idx in
+                        np.where([event.name == 'TargetUnitCommandEvent' for event in replay.events])[0]] if
+                       x.ability_type_data['upkeep_player_id'] > 0 and x.ability_type_data['upkeep_player_id'] <= 12]
+    for entity_key in replay.entity.keys():
+        list_marines = [unit for unit in replay.entity[entity_key].units if unit.name == u'Marine']
+        for marine in list_marines:
+            if marine.died_at is None:
+                continue
 
+            list_ppl_who_atkd_marine = list(set([atk_event[1] for atk_event in list_atk_events if marine.owner.sid == atk_event[2] and
+                                                 (marine.died_at - atk_event[0]) > 0 and (
+                                                 marine.died_at - atk_event[0]) < (16 * 15)]))
+            list_ppl_who_atkd_marine = [person for person in list_ppl_who_atkd_marine if person != marine.owner.sid]
+            if len(list_ppl_who_atkd_marine) > 0:
+                ppl_who_atkd_marine = ''
+                for person_num in range(len(list_ppl_who_atkd_marine)):
+                    id_src = list_ppl_who_atkd_marine[person_num]
+                    name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
+                    ppl_who_atkd_marine = ppl_who_atkd_marine + ' [%s]' % name_src
+            else:
+                ppl_who_atkd_marine = ''
+            id_dst = marine.owner.sid
+            name_dst = list_player_name[id_dst] + ' (#%02d)' % (1 + id_dst)
+            if marine.killing_unit is None:
+                deaths = [[marine.died_at - unit.died_at, unit.died_at, unit.killing_unit] for unit in
+                          replay.entity[entity_key].units if
+                          (unit.killing_unit is not None) and (unit.killing_unit.owner is not None) and abs(
+                              marine.died_at - unit.died_at) <= (16 * 5)]
 
-
-
-
-
-
-
+                if len(deaths) > 0:
+                    idx_min = np.argmin([death[0] for death in deaths])
+                    time_gameloop = deaths[idx_min][1]
+                    time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+                    time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+                    id_src = deaths[idx_min][2].owner.sid
+                    if id_src < 12:
+                        name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
+                        list_ppl_who_atkd_marine = [person for person in list_ppl_who_atkd_marine if
+                                                    person != id_src]
+                        if len(list_ppl_who_atkd_marine) > 0:
+                            ppl_who_atkd_marine = ''
+                            for person_num in range(len(list_ppl_who_atkd_marine)):
+                                id_src = list_ppl_who_atkd_marine[person_num]
+                                name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
+                                ppl_who_atkd_marine = ppl_who_atkd_marine + ' [%s]' % name_src
+                        else:
+                            ppl_who_atkd_marine = ''
+                    elif id_src == 12:
+                        if deaths[idx_min][2].name is not None:
+                            name_src = replay.entity[13].name + ' (AI) (%s)' % deaths[idx_min][2].name
+                        else:
+                            name_src = replay.entity[13].name + ' (AI) (unitId: %d)' % deaths[idx_min][2].id
+                    elif id_src == 13:
+                        if deaths[idx_min][2].name is not None:
+                            name_src = replay.entity[14].name + ' (AI) (%s)' % deaths[idx_min][2].name
+                        else:
+                            name_src = replay.entity[14].name + ' (AI) (unitId: %d)' % deaths[idx_min][2].id
+                    else:
+                        name_src = 'Misc. Obj. (unitId: %d)' % deaths[idx_min][2].id
+                    output.append(
+                        [time_gameloop, '[%02d:%02d] %s was killed by %s' % (
+                        time_min, time_sec, name_dst, name_src) + ppl_who_atkd_marine])
+                else:
+                    deaths = [[marine.died_at - unit.died_at, unit.died_at, unit.killing_unit] for unit in
+                              replay.entity[entity_key].units if
+                              (unit.killing_unit is not None) and abs(marine.died_at - unit.died_at) <= (16 * 5)]
+                    if len(deaths) > 0:
+                        idx_min = np.argmin([death[0] for death in deaths])
+                        id_src = deaths[idx_min][2].id
+                        name_src = ' (unitId: %d)'%id_src
+                    else:
+                        name_src = ''
+                    time_gameloop = marine.died_at
+                    time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+                    time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+                    output.append([time_gameloop, '[%02d:%02d] %s was killed by Misc. Obj.%s' % (
+                        time_min, time_sec, name_dst, name_src) + ppl_who_atkd_marine])
+            else:
+                time_gameloop = marine.died_at
+                time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+                time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+                if marine.killing_unit.owner is not None:
+                    id_src = marine.killing_unit.owner.sid
+                else:
+                    id_src = -1
+                if id_src < 12:
+                    name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
+                    list_ppl_who_atkd_marine = [person for person in list_ppl_who_atkd_marine if
+                                                person != id_src]
+                    if len(list_ppl_who_atkd_marine) > 0:
+                        ppl_who_atkd_marine = ''
+                        for person_num in range(len(list_ppl_who_atkd_marine)):
+                            id_src = list_ppl_who_atkd_marine[person_num]
+                            name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
+                            ppl_who_atkd_marine = ppl_who_atkd_marine + ' [%s]' % name_src
+                    else:
+                        ppl_who_atkd_marine = ''
+                elif id_src == 12:
+                    if marine.killing_unit.name is not None:
+                        name_src = replay.entity[13].name + ' (AI) (%s)' % marine.killing_unit.name
+                    else:
+                        name_src = replay.entity[13].name + ' (AI) (unitId: %d)' % marine.killing_unit.id
+                elif id_src == 13:
+                    if marine.killing_unit.name is not None:
+                        name_src = replay.entity[14].name + ' (AI) (%s)' % marine.killing_unit.name
+                    else:
+                        name_src = replay.entity[14].name + ' (AI) (unitId: %d)' % marine.killing_unit.id
+                else:
+                    name_src = 'Misc. Obj. (unitId: %d)' % marine.killing_unit.id
+                output.append([time_gameloop, '[%02d:%02d] %s was killed by %s' % (
+                time_min, time_sec, name_dst, name_src) + ppl_who_atkd_marine])
 
     output = [output[idx][1] for idx in np.argsort(np.array([out[0] for out in output]))]
 
