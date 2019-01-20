@@ -378,9 +378,9 @@ def get_game_events(data_json_,list_player_name,replay):
                         if len(list_ppl_who_atkd_marine) > 0:
                             ppl_who_atkd_marine = ''
                             for person_num in range(len(list_ppl_who_atkd_marine)):
-                                id_src = list_ppl_who_atkd_marine[person_num]
-                                name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
-                                ppl_who_atkd_marine = ppl_who_atkd_marine + ' [%s]' % name_src
+                                id_src2 = list_ppl_who_atkd_marine[person_num]
+                                name_src2 = list_player_name[id_src2] + ' (#%02d)' % (1 + id_src2)
+                                ppl_who_atkd_marine = ppl_who_atkd_marine + ' [%s]' % name_src2
                         else:
                             ppl_who_atkd_marine = ''
                     elif id_src == 12:
@@ -406,6 +406,16 @@ def get_game_events(data_json_,list_player_name,replay):
                         idx_min = np.argmin([death[0] for death in deaths])
                         id_src = deaths[idx_min][2].id
                         name_src = ' (unitId: %d)'%id_src
+                        list_ppl_who_atkd_marine = [person for person in list_ppl_who_atkd_marine if
+                                                    person != id_src]
+                        if len(list_ppl_who_atkd_marine) > 0:
+                            ppl_who_atkd_marine = ''
+                            for person_num in range(len(list_ppl_who_atkd_marine)):
+                                id_src2 = list_ppl_who_atkd_marine[person_num]
+                                name_src2 = list_player_name[id_src2] + ' (#%02d)' % (1 + id_src2)
+                                ppl_who_atkd_marine = ppl_who_atkd_marine + ' [%s]' % name_src2
+                        else:
+                            ppl_who_atkd_marine = ''
                     else:
                         name_src = ''
                     time_gameloop = marine.died_at
@@ -428,9 +438,9 @@ def get_game_events(data_json_,list_player_name,replay):
                     if len(list_ppl_who_atkd_marine) > 0:
                         ppl_who_atkd_marine = ''
                         for person_num in range(len(list_ppl_who_atkd_marine)):
-                            id_src = list_ppl_who_atkd_marine[person_num]
-                            name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
-                            ppl_who_atkd_marine = ppl_who_atkd_marine + ' [%s]' % name_src
+                            id_src2 = list_ppl_who_atkd_marine[person_num]
+                            name_src2 = list_player_name[id_src2] + ' (#%02d)' % (1 + id_src2)
+                            ppl_who_atkd_marine = ppl_who_atkd_marine + ' [%s]' % name_src2
                     else:
                         ppl_who_atkd_marine = ''
                 elif id_src == 12:
