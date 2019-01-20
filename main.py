@@ -347,7 +347,7 @@ def get_game_events(data_json_,list_player_name,replay):
 
             list_ppl_who_atkd_marine = list(set([atk_event[1] for atk_event in list_atk_events if marine.owner.sid == atk_event[2] and
                                                  (marine.died_at - atk_event[0]) > 0 and (
-                                                 marine.died_at - atk_event[0]) < (16 * 15)]))
+                                                 marine.died_at - atk_event[0]) < (16 * 60)]))
             list_ppl_who_atkd_marine = [person for person in list_ppl_who_atkd_marine if person != marine.owner.sid]
             if len(list_ppl_who_atkd_marine) > 0:
                 ppl_who_atkd_marine = ''
