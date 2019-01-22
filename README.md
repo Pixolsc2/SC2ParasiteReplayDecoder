@@ -87,20 +87,29 @@ Traceback (most recent call last):
     subprocess.check_call(str_cmd_json, shell=True)
   File ".........\Anaconda2\lib\subprocess.py", line 186, in check_call
     raise CalledProcessError(retcode, cmd)
-subprocess.CalledProcessError: Command 'python ".\s2protocol-master\s2protocol\s2_cli.py" --all --ndjson "P A R A S I T E - ZETA (1266).SC2Replay" > "tmp.ndjson"' returned non-zero exit status 1```
+subprocess.CalledProcessError: Command 'python ".\s2protocol-master\s2protocol\s2_cli.py" --all --ndjson "P A R A S I T E - ZETA (1266).SC2Replay" > "tmp.ndjson"' returned non-zero exit status 1
+```
 
 
 
 Take note of the protocol number from the first line of error above:
-```protocol71663```
+```
+protocol71663
+```
 
 Then check if there is a file named "protocol71663.py" at:
 https://github.com/Blizzard/s2protocol/tree/master/s2protocol/versions
 
 If there is, download it and place it as follows:
-```%YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/s2protocol-master/s2protocol/versions/protocol71663.py```
+```
+%YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/s2protocol-master/s2protocol/versions/protocol71663.py
+```
 
 If Blizzard has not updated their Github yet, you may attempt to remedy the situation by copying the latest protocol file they have then renaming it, i.e. create a copy of:
-```%YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/s2protocol-master/s2protocol/versions/protocol71523.py```
+```
+%YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/s2protocol-master/s2protocol/versions/protocol71523.py
+```
 and name it to:
-```%YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/s2protocol-master/s2protocol/versions/protocol71663.py```
+```
+%YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/s2protocol-master/s2protocol/versions/protocol71663.py
+```
