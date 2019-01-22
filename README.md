@@ -79,7 +79,8 @@ python main.py "PATHTOREPLAYFILE.SC2Replay"
 # Errors
 ### S2Protocol Errors
 If you receive an error like this after a recent Starcraft 2 patch update:
-```Unsupported base build: 71663 (No module named protocol71663)
+```
+Unsupported base build: 71663 (No module named protocol71663)
 Traceback (most recent call last):
   File "main.py", line 549, in <module>
     main()
