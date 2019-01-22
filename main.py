@@ -293,7 +293,7 @@ def get_game_events(data_json_,list_player_name,replay):
                 else:
                     targetting_tracker.append([time_gameloop, time_min, time_sec, 1])
 
-            name_src = list_player_name[player_id] + ' (#%02d)' % (1 + id_src)
+            name_src = list_player_name[player_id] + ' (#%02d)' % (1 + player_id)
             for ii in range(len(targetting_tracker)):
                 if targetting_tracker[ii][-1] >= mass_target_min_req:
                     output.append([targetting_tracker[ii][0], '[%02d:%02d] %s has mass target toggled (cnt: %d) ' % (
