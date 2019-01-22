@@ -101,16 +101,16 @@ protocol71663
 Then check if there is a file named "protocol71663.py" at:
 https://github.com/Blizzard/s2protocol/tree/master/s2protocol/versions
 
-If there is, download it and place it as follows:
+If it exists then download it and place it as follows:
 ```
 %YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/s2protocol-master/s2protocol/versions/protocol71663.py
 ```
 
-If Blizzard has not updated their Github yet, you may attempt to remedy the situation by copying the latest protocol file they have then renaming it, i.e. create a copy of:
+If Blizzard has not updated their protocol yet, you may attempt to remedy the situation by copying the latest version of the protocol file that exists and then renaming it, i.e. create a copy of:
 ```
 %YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/s2protocol-master/s2protocol/versions/protocol71523.py
 ```
-and name it to:
+and rename it to:
 ```
 %YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/s2protocol-master/s2protocol/versions/protocol71663.py
 ```
