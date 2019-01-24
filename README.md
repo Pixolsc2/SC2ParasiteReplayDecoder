@@ -75,3 +75,45 @@ Open a "Command Prompt" window and type in:
 cd %YOURDIRECTORY%/SC2ParasiteReplayDecoder-master
 python main.py "PATHTOREPLAYFILE.SC2Replay"
 ```
+
+# Errors
+### sc2reader Errors
+If there are "n" players where n<12, and slots are defined as lobby slot #1, lobby slot #2, ..., lobby slot #12. If lobby slot #1, ..., lobby slot #n are not all filled then sc2reader will mess up indexing and program might error out or give erroneous results. This is a bug I don't plan to deal with since at least 99% of Parasite lobbies start the game with all 12 slots filled. It will work fine if "handles" shows 12 players (even if they're disconnected mid-loading screen).
+
+### S2Protocol Errors
+If you receive an error like this after a recent Starcraft 2 patch update:
+```
+Unsupported base build: 71663 (No module named protocol71663)
+Traceback (most recent call last):
+  File "main.py", line 549, in <module>
+    main()
+  File "main.py", line 486, in main
+    subprocess.check_call(str_cmd_json, shell=True)
+  File ".........\Anaconda2\lib\subprocess.py", line 186, in check_call
+    raise CalledProcessError(retcode, cmd)
+subprocess.CalledProcessError: Command 'python ".\s2protocol-master\s2protocol\s2_cli.py" --all --ndjson "P A R A S I T E - ZETA (1266).SC2Replay" > "tmp.ndjson"' returned non-zero exit status 1
+```
+
+
+
+Take note of the protocol number from the first line of error above:
+```
+protocol71663
+```
+
+Then check if there is a file named "protocol71663.py" at:
+https://github.com/Blizzard/s2protocol/tree/master/s2protocol/versions
+
+If it exists then download it and place it as follows:
+```
+%YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/s2protocol-master/s2protocol/versions/protocol71663.py
+```
+
+If Blizzard has not updated their protocol yet, you may attempt to remedy the situation by copying the latest version of the protocol file that exists and then renaming it, i.e. create a copy of:
+```
+%YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/s2protocol-master/s2protocol/versions/protocol71523.py
+```
+and rename it to:
+```
+%YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/s2protocol-master/s2protocol/versions/protocol71663.py
+```
