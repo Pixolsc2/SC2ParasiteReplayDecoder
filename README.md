@@ -77,6 +77,9 @@ python main.py "PATHTOREPLAYFILE.SC2Replay"
 ```
 
 # Errors
+### sc2reader Errors
+If there are "n" players where n<12, and slots are defined as lobby slot #1, lobby slot #2, ..., lobby slot #12. If lobby slot #1, ..., lobby slot #n are not all filled then sc2reader will mess up indexing and program might error out or give erroneous results. This is a bug I don't plan to deal with since at least 99% of Parasite lobbies start the game with all 12 slots filled. It will work fine if "handles" shows 12 players (even if they're disconnected mid-loading screen).
+
 ### S2Protocol Errors
 If you receive an error like this after a recent Starcraft 2 patch update:
 ```
