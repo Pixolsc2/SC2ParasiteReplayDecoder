@@ -206,6 +206,15 @@ def get_game_events(data_json_,list_player_name,replay):
             time_gameloop = datum['_gameloop']
             output.append([time_gameloop, '[%02d:%02d] %s is Android' % (time_min, time_sec, name_dst)])
 
+        # Android upgrade to T800
+        if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'ChassisSelectedT800':
+            id_dst = datum['m_playerId'] - 1
+            name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
+            time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
+            time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
+            time_gameloop = datum['_gameloop']
+            output.append([time_gameloop, '[%02d:%02d] %s upgraded to T-800 Android Chassis' % (time_min, time_sec, name_dst)])
+
         # Check Core Directive Assignment (experimental since there's no upgrade-tag for evil vs good role)
         if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'COREDIRECTIVE':
             id_dst = datum['m_playerId'] - 1
@@ -233,32 +242,32 @@ def get_game_events(data_json_,list_player_name,replay):
                 output.append([time_gameloop, '[%02d:%02d] %s is now an Alien Spawn' % (time_min, time_sec, name_dst)])
 
         # Check who crabbed who (experimental since ability link value may change each patch)
-        list_crab_id = [2477, 2478, 2479, 2473, 2474, 2475]
-        try:
-            if 'm_abil' in datum.keys() and datum['m_abil'] and 'm_abilLink' in datum['m_abil'].keys() and (datum['m_abil']['m_abilLink'] in list_crab_id):
-                id_dst = datum['m_data']['TargetUnit']['m_snapshotControlPlayerId'] - 1
-                id_src = datum['_userid']['m_userId']  # for some reason, this one is already 0-based.
-                id_dst_is_player = id_dst >= 0 and id_dst < len(list_player_name)
-                mtag = datum['m_data']['TargetUnit']['m_tag']
+        # list_crab_id = [2477, 2478, 2479, 2473, 2474, 2475]
+        # try:
+        #     if 'm_abil' in datum.keys() and datum['m_abil'] and 'm_abilLink' in datum['m_abil'].keys() and (datum['m_abil']['m_abilLink'] in list_crab_id):
+        #         id_dst = datum['m_data']['TargetUnit']['m_snapshotControlPlayerId'] - 1
+        #         id_src = datum['_userid']['m_userId']  # for some reason, this one is already 0-based.
+        #         id_dst_is_player = id_dst >= 0 and id_dst < len(list_player_name)
+        #         mtag = datum['m_data']['TargetUnit']['m_tag']
 
-                name_src = list_player_name[id_src] + ' (#%02d)'%(1+id_src)
-                time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
-                time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
-                time_gameloop = datum['_gameloop']
+        #         name_src = list_player_name[id_src] + ' (#%02d)'%(1+id_src)
+        #         time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
+        #         time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
+        #         time_gameloop = datum['_gameloop']
 
-                if id_dst_is_player:
-                    name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
-                    output.append([time_gameloop, '[%02d:%02d] %s was crabbed by %s' % (time_min, time_sec, name_dst, name_src)])
-                elif not id_dst_is_player and mtag in station_life_modules_mtags:
-                    module_num = np.where([mtag==mtag_enum for mtag_enum in station_life_modules_mtags])[0][0]+1
-                    output.append([time_gameloop, '[%02d:%02d] Station module #%d was infested by %s' % (time_min, time_sec, module_num, name_src)])
-                elif not id_dst_is_player and mtag in bunker_life_modules_mtags:
-                    module_num = np.where([mtag==mtag_enum for mtag_enum in bunker_life_modules_mtags])[0][0]+1
-                    output.append([time_gameloop, '[%02d:%02d] Bunker module #%d was infested by %s' % (time_min, time_sec, module_num, name_src)])
-                else:
-                    name_dst = 'Misc. Obj.'
-        except:
-            pass
+        #         if id_dst_is_player:
+        #             name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
+        #             output.append([time_gameloop, '[%02d:%02d] %s was crabbed by %s' % (time_min, time_sec, name_dst, name_src)])
+        #         elif not id_dst_is_player and mtag in station_life_modules_mtags:
+        #             module_num = np.where([mtag==mtag_enum for mtag_enum in station_life_modules_mtags])[0][0]+1
+        #             output.append([time_gameloop, '[%02d:%02d] Station module #%d was infested by %s' % (time_min, time_sec, module_num, name_src)])
+        #         elif not id_dst_is_player and mtag in bunker_life_modules_mtags:
+        #             module_num = np.where([mtag==mtag_enum for mtag_enum in bunker_life_modules_mtags])[0][0]+1
+        #             output.append([time_gameloop, '[%02d:%02d] Bunker module #%d was infested by %s' % (time_min, time_sec, module_num, name_src)])
+        #         else:
+        #             name_dst = 'Misc. Obj.'
+        # except:
+        #     pass
             
 
             
@@ -274,30 +283,30 @@ def get_game_events(data_json_,list_player_name,replay):
 
 
 
-    # Track mass targetting
-    list_event_bridge_target = [[x.frame, x.ability_link, x.player.sid] for x in [replay.events[idx] for idx in
-                                            np.where([event.name == 'BasicCommandEvent' for event in replay.events])[0]]
-                                if x.ability_link >= 2710 and x.ability_link <= 2739 and x.command_index == 0]
+    # # Track mass targetting
+    # list_event_bridge_target = [[x.frame, x.ability_link, x.player.sid] for x in [replay.events[idx] for idx in
+    #                                         np.where([event.name == 'BasicCommandEvent' for event in replay.events])[0]]
+    #                             if x.ability_link >= 2700 and x.ability_link <= 2800 and x.command_index == 0]
 
-    mass_target_min_req = 4
-    for player_id in range(len(list_player_name)):
-        list_event_cur = [event for event in list_event_bridge_target if event[2] == player_id]
-        if len(list_event_cur) >= mass_target_min_req:
-            targetting_tracker = []
-            for event in list_event_cur:
-                time_gameloop = event[0]
-                time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
-                time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
-                if len(targetting_tracker) > 0 and abs(time_gameloop - targetting_tracker[-1][0]) < (16*10):
-                    targetting_tracker[-1][-1] = targetting_tracker [-1][-1] + 1
-                else:
-                    targetting_tracker.append([time_gameloop, time_min, time_sec, 1])
+    # mass_target_min_req = 4
+    # for player_id in range(len(list_player_name)):
+    #     list_event_cur = [event for event in list_event_bridge_target if event[2] == player_id]
+    #     if len(list_event_cur) >= mass_target_min_req:
+    #         targetting_tracker = []
+    #         for event in list_event_cur:
+    #             time_gameloop = event[0]
+    #             time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+    #             time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+    #             if len(targetting_tracker) > 0 and abs(time_gameloop - targetting_tracker[-1][0]) < (16*10):
+    #                 targetting_tracker[-1][-1] = targetting_tracker [-1][-1] + 1
+    #             else:
+    #                 targetting_tracker.append([time_gameloop, time_min, time_sec, 1])
 
-            name_src = list_player_name[player_id] + ' (#%02d)' % (1 + player_id)
-            for ii in range(len(targetting_tracker)):
-                if targetting_tracker[ii][-1] >= mass_target_min_req:
-                    output.append([targetting_tracker[ii][0], '[%02d:%02d] %s has mass target toggled (cnt: %d) ' % (
-                        targetting_tracker[ii][1], targetting_tracker[ii][2], name_src, targetting_tracker[ii][3])])
+    #         name_src = list_player_name[player_id] + ' (#%02d)' % (1 + player_id)
+    #         for ii in range(len(targetting_tracker)):
+    #             if targetting_tracker[ii][-1] >= mass_target_min_req:
+    #                 output.append([targetting_tracker[ii][0], '[%02d:%02d] %s has mass target toggled (cnt: %d) ' % (
+    #                     targetting_tracker[ii][1], targetting_tracker[ii][2], name_src, targetting_tracker[ii][3])])
 
     # Track Power Links
     powerlink_left_loc = (48.0, 141.0)
