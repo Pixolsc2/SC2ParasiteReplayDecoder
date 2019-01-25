@@ -55,6 +55,7 @@ def get_game_events(data_json_,list_player_name,replay):
             time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
             time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
             time_gameloop = datum['_gameloop']
+            ability_loc = None
 
             if 'TargetPoint' in datum['m_data'].keys():
                 ability_loc = [datum['m_data']['TargetPoint']['y'], datum['m_data']['TargetPoint']['x']]
