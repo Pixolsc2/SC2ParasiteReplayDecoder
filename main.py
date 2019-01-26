@@ -399,7 +399,7 @@ def get_game_events(data_json_,list_player_name,replay):
                     time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
                     time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
                     id_src = deaths[idx_min][2].owner.sid
-                    if id_src < 12:
+                    if id_src >= 0 and id_src < 12:
                         name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
                         list_ppl_who_atkd_marine = [person for person in list_ppl_who_atkd_marine if
                                                     person != id_src]
@@ -459,7 +459,7 @@ def get_game_events(data_json_,list_player_name,replay):
                     id_src = marine.killing_unit.owner.sid
                 else:
                     id_src = -1
-                if id_src < 12:
+                if id_src >= 0 and id_src < 12:
                     name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
                     list_ppl_who_atkd_marine = [person for person in list_ppl_who_atkd_marine if
                                                 person != id_src]
