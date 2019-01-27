@@ -559,13 +559,13 @@ def main():
     for ii in range(num_players):
         if ii>0 and ii%3 == 0:
             print('')
+        tmp_metadata = ('[#%2d] [K: %3s] [G: %4s] [%-15s] [%3s] [%6s] ' % (ii+1, list_player_karma[ii], list_player_games[ii],
+                                     list_player_handles[ii], list_player_role[ii], list_player_color_txt[ii])).encode('utf-8')
         if len(list_player_clan[ii]) > 0:
-            print('[#%2d] [K: %3s] [G: %4s] [%-15s] [%3s] [%6s] <%s> %s' % (ii+1, list_player_karma[ii], list_player_games[ii],
-                                                             list_player_handles[ii], list_player_role[ii], list_player_color_txt[ii], list_player_clan[ii],
-                                                             list_player_name[ii]))
+            tmp_playername = ('<%s> %s'%(list_player_clan[ii],list_player_name[ii])).encode('utf-8')
         else:
-            print('[#%2d] [K: %3s] [G: %4s] [%-15s] [%3s] [%6s] %s' % (ii+1, list_player_karma[ii], list_player_games[ii],
-                                                                list_player_handles[ii], list_player_role[ii], list_player_color_txt[ii], list_player_name[ii]))
+            tmp_playername = ('%s'%(list_player_name[ii])).encode('utf-8')
+        print(tmp_metadata+tmp_playername)
 
     print('\nEvents:')
     for ii in range(len(output)):
