@@ -109,7 +109,7 @@ def main():
     for ii in range(len(output_msg)):
         if ii>0 and ii%3 == 0:
             print('')
-        print(output_msg[ii])
+        print(output_msg[ii].encode('utf-8'))
 
 if __name__ == '__main__':
     main()
