@@ -11,13 +11,15 @@ This decodes .SC2Replay files for the game Parasite Zeta so that you may quickly
 * Player spawning
 * Player death
 * Player leaving the game
-
-### Recently Added:
 * Player role / color
 * Android directive (good or evil)
 * Module infestation
 * Mass-Targetting (at least 4 players are targetted/un-targetted at bridge console)
 * Turning Off Power Link
+
+### Recently Added:
+Chat Log Extraction (Differentiation of All-Chat, Observer-Chat, and Infested-Chat is included. Moderator-Speak is untested). Thanks to BrotherBear for experiments.
+
 
 
 
