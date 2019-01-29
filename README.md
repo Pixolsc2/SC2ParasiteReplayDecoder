@@ -55,10 +55,10 @@ cd %YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/s2protocol-master/
 python %YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/s2protocol-master/setup.py install
 ```
 
-Install s2reader by opening "Command Prompt" and type in:
+Install sc2reader by opening "Command Prompt" and type in:
 ```python
-cd %YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/s2protocol-master/
-python %YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/s2protocol-master/setup.py install
+cd %YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/sc2reader-upstream/
+python %YOURDIRECTORY%/SC2ParasiteReplayDecoder-master/sc2reader-upstream/setup.py install
 ```
 ### Installation/Usage Video
 https://streamable.com/w44db
