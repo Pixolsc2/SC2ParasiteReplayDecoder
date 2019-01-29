@@ -75,6 +75,19 @@ def main():
             id_dst = datum['_userid']['m_userId']
             list_player_alienchat_mode[id_dst] = not list_player_alienchat_mode[id_dst]
 
+        # Check who is Alien Host/Spawn
+        if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'CanUseGeneModAlien':
+            id_dst = datum['m_playerId'] - 1
+            name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
+            time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
+            time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
+            time_gameloop = datum['_gameloop']
+            if time_gameloop <= 50:
+                output_msg.append([time_gameloop, '[%02d:%02d] [NEWSPAWN] [%4s] [%3s] %s is Alien Host' % (time_min, time_sec, list_player_color_txt[id_dst], list_player_role[id_dst], name_dst)])
+            else:
+                output_msg.append([time_gameloop, '[%02d:%02d] [NEWSPAWN] [%4s] [%3s] %s is now an Alien Spawn' % (time_min, time_sec, list_player_color_txt[id_dst], list_player_role[id_dst], name_dst)])
+
+
         if '_event' in datum.keys() and datum['_event'] == 'NNet.Game.STriggerChatMessageEvent':
             id_dst = datum['_userid']['m_userId']
             name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
