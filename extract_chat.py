@@ -53,7 +53,6 @@ def main():
     output_msg = []
     list_player_death_times = [np.inf]*12
     for entity_key in replay.entity.keys():
-        list_SCV = [unit for unit in replay.entity[entity_key].units if unit.name == u'SCV']
         list_marine_scv_died_at = [unit.died_at for unit in replay.entity[entity_key].units if unit.name in ['SCV', 'Marine']]
 
         # skip if player did not die
