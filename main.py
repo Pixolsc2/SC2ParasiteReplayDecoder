@@ -255,10 +255,20 @@ def get_game_events(data_json_,list_player_name,replay):
             time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
             time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
             time_gameloop = datum['_gameloop']
+            if time_gameloop > 50:
+                output.append([time_gameloop, '[%02d:%02d] %s is now an Alien Spawn' % (time_min, time_sec, name_dst)])
+
+        # Check who is Alien Host/Spawn
+        if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'AlienIdentificationUpgrade2':
+            id_dst = datum['m_playerId'] - 1
+            name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
+            time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
+            time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
+            time_gameloop = datum['_gameloop']
             if time_gameloop <= 50:
                 output.append([time_gameloop, '[%02d:%02d] %s is Alien Host' % (time_min, time_sec, name_dst)])
             else:
-                output.append([time_gameloop, '[%02d:%02d] %s is now an Alien Spawn' % (time_min, time_sec, name_dst)])
+                output.append([time_gameloop, '[%02d:%02d] %s is now Alien Host' % (time_min, time_sec, name_dst)])
 
         # Check who crabbed who (experimental since ability link value may change each patch)
         try:
@@ -363,6 +373,8 @@ def get_game_events(data_json_,list_player_name,replay):
             time_min, time_sec, name_src, powerlink_loc_str)])
 
     # Track Player Deaths
+    list_unit_id = [event.unit.id for event in replay.events if event.name == 'UnitBornEvent']
+    list_unit_type_name = [event.unit_type_name for event in replay.events if event.name == 'UnitBornEvent']
     list_atk_events = [[x.frame, x.player.sid, x.ability_type_data['upkeep_player_id'] - 1] for x in
                        [replay.events[idx] for idx in
                         np.where([event.name == 'TargetUnitCommandEvent' for event in replay.events])[0]] if
@@ -415,14 +427,20 @@ def get_game_events(data_json_,list_player_name,replay):
                         if deaths[idx_min][2].name is not None:
                             name_src = replay.entity[13].name + ' (AI) (%s)' % deaths[idx_min][2].name
                         else:
-                            name_src = replay.entity[13].name + ' (AI) (unitId: %d)' % deaths[idx_min][2].id
+                            unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if deaths[idx_min][2].id == tmp_unit_id][0]]
+                            name_src = replay.entity[13].name + ' (AI) (%s)' % unit_type_name
+                            # name_src = replay.entity[13].name + ' (AI) (unitId: %d)' % deaths[idx_min][2].id
                     elif id_src == 13:
                         if deaths[idx_min][2].name is not None:
                             name_src = replay.entity[14].name + ' (AI) (%s)' % deaths[idx_min][2].name
                         else:
-                            name_src = replay.entity[14].name + ' (AI) (unitId: %d)' % deaths[idx_min][2].id
+                            unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if deaths[idx_min][2].id == tmp_unit_id][0]]
+                            name_src = replay.entity[14].name + ' (AI) (%s)' % unit_type_name
+                            # name_src = replay.entity[14].name + ' (AI) (unitId: %d)' % deaths[idx_min][2].id
                     else:
-                        name_src = 'Misc. Obj. (unitId: %d)' % deaths[idx_min][2].id
+                        unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if deaths[idx_min][2].id == tmp_unit_id][0]]
+                        name_src = 'Misc. Obj. (%s)' % unit_type_name
+                        # name_src = 'Misc. Obj. (unitId: %d)' % deaths[idx_min][2].id
                     output.append(
                         [time_gameloop, '[%02d:%02d] %s was killed by %s' % (
                         time_min, time_sec, name_dst, name_src) + ppl_who_atkd_marine])
@@ -433,7 +451,9 @@ def get_game_events(data_json_,list_player_name,replay):
                     if len(deaths) > 0:
                         idx_min = np.argmin([death[0] for death in deaths])
                         id_src = deaths[idx_min][2].id
-                        name_src = ' (unitId: %d)'%id_src
+                        unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if deaths[idx_min][2].id == tmp_unit_id][0]]
+                        name_src = ' (%s)' % unit_type_name
+                        # name_src = ' (unitId: %d)'%id_src
                         list_ppl_who_atkd_marine = [person for person in list_ppl_who_atkd_marine if
                                                     person != id_src]
                         if len(list_ppl_who_atkd_marine) > 0:
@@ -475,16 +495,94 @@ def get_game_events(data_json_,list_player_name,replay):
                     if marine.killing_unit.name is not None:
                         name_src = replay.entity[13].name + ' (AI) (%s)' % marine.killing_unit.name
                     else:
-                        name_src = replay.entity[13].name + ' (AI) (unitId: %d)' % marine.killing_unit.id
+                        unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if marine.killing_unit.id == tmp_unit_id][0]]
+                        name_src = replay.entity[13].name + ' (AI) (%s)' % unit_type_name
+                        # name_src = replay.entity[13].name + ' (AI) (unitId: %d)' % marine.killing_unit.id
                 elif id_src == 13:
                     if marine.killing_unit.name is not None:
                         name_src = replay.entity[14].name + ' (AI) (%s)' % marine.killing_unit.name
                     else:
-                        name_src = replay.entity[14].name + ' (AI) (unitId: %d)' % marine.killing_unit.id
+                        unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if marine.killing_unit.id == tmp_unit_id][0]]
+                        name_src = replay.entity[14].name + ' (AI) (%s)' % unit_type_name
+                        # name_src = replay.entity[14].name + ' (AI) (unitId: %d)' % marine.killing_unit.id
                 else:
-                    name_src = 'Misc. Obj. (unitId: %d)' % marine.killing_unit.id
+                    unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if marine.killing_unit.id == tmp_unit_id][0]]
+                    name_src = 'Misc. Obj. (%s)' % unit_type_name
+                    # name_src = 'Misc. Obj. (unitId: %d)' % marine.killing_unit.id
                 output.append([time_gameloop, '[%02d:%02d] %s was killed by %s' % (
                 time_min, time_sec, name_dst, name_src) + ppl_who_atkd_marine])
+
+
+    # Track Alien Evolutions
+    list_evo = [None]*4
+    list_evo[0] = [['ZerglingCarbot','Zergling (T2)'],
+                   ['PrisonZealot','Psychic (T2)'],
+                   ]
+
+    list_evo[1] = [['HunterKiller','Hydra (T3)'],
+                   ['PrimalRoach', 'Roach (T3)'],
+                   ['Mutalisk', 'Bat (T3)'],
+                   ['HotSSwarmling', 'Veloci Zergling (T3)'],
+                   ['Zeratul','Cosmic Assassin (T3)'],
+                   ['WhizzardAlien','Whizzard (T3)'],
+                   ['Archon','Voltaic (T3)'],
+                   ]
+
+    list_evo[2] = [['Ravager','Flame Roach (T4)'],
+                   ['LargeSwarmQueen','Queen (T4)'],
+                   ['PrimalHydralisk','Ice Hydra (T4)'],
+                   ['HotSTorrasque2','Ultralisk (T4)'],
+                   ['MutaliskBroodlord', 'Venom Bat (T4)'],
+                   ['DehakaMirrorImage', 'Veloci Dehaka (T4)'],
+                   ]
+
+    list_evo[3] = [['XenomorphMatriarch','Matriarch Queen (T5)'],
+                   ['Yagdra','Flame Gargantuan (T5)'],
+                   ['AlphaXenodon','Ultralisk (T5)'],
+                   ['Broodlord','Flying Crab (T5)'],
+                   ['Dehaka','Veloci Dehaka (T5)'],
+                   ]
+
+    list_evo_upgrades = ['AlienTier12','AlienTier13','AlienTier14','AlienTier15']
+
+    for evo_num in range(len(list_evo)):
+        time_evo = min([np.inf] + [event.frame for event in replay.events if event.name == 'UpgradeCompleteEvent' if event.upgrade_type_name == list_evo_upgrades[evo_num]])
+        chosen_evo = [idx_evo for event in replay.events if event.name == 'UnitBornEvent' for idx_evo,evo_type_name in enumerate([evo[0] for evo in list_evo[evo_num]]) if event.unit_type_name == evo_type_name and abs(event.frame-time_evo) <= 3]
+
+        if time_evo < 16*3600*24:
+            time_min = np.floor(time_evo / 1000. * 62.5 / 60).astype('int')
+            time_sec = np.floor(time_evo / 1000. * 62.5 % 60)
+            if len(chosen_evo) > 0:
+                output.append([time_evo, '[%02d:%02d] Alien Evolution: %s' % (time_min, time_sec, list_evo[evo_num][chosen_evo[0]][1])])
+            else:
+                output.append([time_evo, '[%02d:%02d] Alien Evolution: Unknown (T%d)' % (time_min, time_sec,evo_num+2)])
+        elif len(chosen_evo) == 0 and evo_num == (len(list_evo) - 1):
+            time_evo = min([np.inf] + [event.frame for event in replay.events if event.name == 'UnitTypeChangeEvent' and event.unit_type_name == 'BroodLord'])
+            if time_evo < 16*3600*24:
+                time_min = np.floor(time_evo / 1000. * 62.5 / 60).astype('int')
+                time_sec = np.floor(time_evo / 1000. * 62.5 % 60)
+                output.append([time_evo, '[%02d:%02d] Alien Evolution: Flying Crab (T5)' % (time_min, time_sec)])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     output = [output[idx][1] for idx in np.argsort(np.array([out[0] for out in output]))]
 
