@@ -380,7 +380,7 @@ def get_game_events(data_json_,list_player_name,replay):
                         np.where([event.name == 'TargetUnitCommandEvent' for event in replay.events])[0]] if
                        x.ability_type_data['upkeep_player_id'] > 0 and x.ability_type_data['upkeep_player_id'] <= 12]
     for entity_key in replay.entity.keys():
-        list_marines = [unit for unit in replay.entity[entity_key].units if unit.name == u'Marine']
+        list_marines = [unit for unit in replay.entity[entity_key].units if unit.name == u'SCV']
         for marine in list_marines:
             if marine.died_at is None:
                 continue
