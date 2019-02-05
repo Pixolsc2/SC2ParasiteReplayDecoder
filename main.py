@@ -225,14 +225,14 @@ def get_game_events(data_json_,list_player_name,replay):
             time_gameloop = datum['_gameloop']
             output.append([time_gameloop, '[%02d:%02d] %s is Android' % (time_min, time_sec, name_dst)])
 
-        # Android upgrade to T800
-        if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'ChassisSelectedT800':
-            id_dst = datum['m_playerId'] - 1
-            name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
-            time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
-            time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
-            time_gameloop = datum['_gameloop']
-            output.append([time_gameloop, '[%02d:%02d] %s upgraded to T-800 Android Chassis' % (time_min, time_sec, name_dst)])
+        # # Android upgrade to T800
+        # if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'ChassisSelectedT800':
+        #     id_dst = datum['m_playerId'] - 1
+        #     name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
+        #     time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
+        #     time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
+        #     time_gameloop = datum['_gameloop']
+        #     output.append([time_gameloop, '[%02d:%02d] %s upgraded to T-800 Android Chassis' % (time_min, time_sec, name_dst)])
 
         # Check Core Directive Assignment (experimental since there's no upgrade-tag for evil vs good role)
         if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'COREDIRECTIVE':
@@ -563,7 +563,20 @@ def get_game_events(data_json_,list_player_name,replay):
                 time_sec = np.floor(time_evo / 1000. * 62.5 % 60)
                 output.append([time_evo, '[%02d:%02d] Alien Evolution: Flying Crab (T5)' % (time_min, time_sec)])
 
-
+    time_t800 = [[event.player.sid,event.frame] for event in replay.events if event.name == 'UpgradeCompleteEvent' and event.upgrade_type_name == 'ChassisSelectedT800']
+    time_synth = [[event.player.sid,event.frame] for event in replay.events if event.name == 'UpgradeCompleteEvent' and event.upgrade_type_name == 'ChassisSelectedSyntheticForm']
+    if len(time_t800) == 1 and len(time_synth) == 1 and time_t800[0][0] == time_synth[0][0]:
+        id_dst = time_t800[0][0]
+        name_dst = list_player_name[id_dst] + ' (#%02d)' % (1 + id_dst)
+        if time_synth[0][1] > time_t800[0][1]:
+            time_gameloop = time_synth[0][1]
+            android_chassis = 'T-800'
+        elif time_t800[0][1] > time_synth[0][1]:
+            time_gameloop = time_t800[0][1]
+            android_chassis = 'Synthetic'
+        time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+        time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+        output.append([time_gameloop, '[%02d:%02d] %s upgraded to %s Chassis' % (time_min, time_sec, name_dst, android_chassis)])
 
 
 
