@@ -27,6 +27,8 @@ def get_game_events(data_json_,list_player_name,replay):
     death_tracker = [None] * 12
     remotemine_id_tracker = []
     remotemine_owner_tracker = []
+    radiojammer_id_tracker = []
+    radiojammer_owner_tracker = []
     debri_fire_tracker = []
     tank_tracker = []
     tank_loc_ptcoord = [[926406., 201907.], [829717., 960161.], [814268., 689009.], [940391., 321852.],
@@ -88,6 +90,35 @@ def get_game_events(data_json_,list_player_name,replay):
                         time_min, time_sec, name_src, tank_num + 1)])
                         break
 
+        # Track radio jammer placements
+        if '_event' in datum.keys() and datum[
+            '_event'] == "NNet.Replay.Tracker.SUnitBornEvent" and 'm_creatorAbilityName' in datum.keys() and datum[
+            'm_creatorAbilityName'] == 'PlaceRadioJammer' and 'm_unitTypeName' in datum.keys() and datum[
+            'm_unitTypeName'] == 'RadioJammer':
+            id_dst = datum['m_controlPlayerId'] - 1
+            name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
+            time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
+            time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
+            time_gameloop = datum['_gameloop']
+            radiojammer_id_tracker.append(datum['m_unitTagIndex'])
+            radiojammer_owner_tracker.append(id_dst)
+            output.append([time_gameloop, '[%02d:%02d] %s placed a radio jammer' % (time_min, time_sec, name_dst)])
+
+        # Track radio jammer death
+        if '_event' in datum.keys() and datum['_event'] == 'NNet.Replay.Tracker.SUnitDiedEvent':
+            if datum['m_unitTagIndex'] in radiojammer_id_tracker:
+                idx = np.where([datum['m_unitTagIndex'] == tracker_enum for tracker_enum in radiojammer_id_tracker])[0][
+                    0]
+                id_dst = radiojammer_owner_tracker[idx]
+                name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
+                time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
+                time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
+                time_gameloop = datum['_gameloop']
+                output.append([time_gameloop, '[%02d:%02d] %s\'s radio jammer has been destroyed' % (
+                time_min, time_sec, name_dst)])
+                radiojammer_id_tracker.pop(idx)
+                radiojammer_owner_tracker.pop(idx)
+
         # Track remote mine placements
         if '_event' in datum.keys() and datum[
             '_event'] == "NNet.Replay.Tracker.SUnitBornEvent" and 'm_creatorAbilityName' in datum.keys() and datum[
@@ -116,8 +147,6 @@ def get_game_events(data_json_,list_player_name,replay):
                 time_min, time_sec, name_dst)])
                 remotemine_id_tracker.pop(idx)
                 remotemine_owner_tracker.pop(idx)
-                # print(remotemine_id_tracker)
-                # print(remotemine_owner_tracker)
 
         # Track debris from explosions
         if '_event' in datum.keys() and datum['_event'] == "NNet.Replay.Tracker.SUnitBornEvent" and datum[
@@ -534,6 +563,7 @@ def get_game_events(data_json_,list_player_name,replay):
                    ['HotSTorrasque2','Ultralisk (T4)'],
                    ['MutaliskBroodlord', 'Venom Bat (T4)'],
                    ['DehakaMirrorImage', 'Veloci Dehaka (T4)'],
+                   ['HybridDominator','Subvoltaic (T4)'],
                    ]
 
     list_evo[3] = [['XenomorphMatriarch','Matriarch Queen (T5)'],
