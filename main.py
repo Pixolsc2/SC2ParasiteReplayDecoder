@@ -25,20 +25,24 @@ def get_bank_info(data_json_):
 def filter_abildata(e_):
     e_parsed_ = []
     for atype_ in e_:
-        if len(atype_._children) <= 1:
-            continue
         if atype_.tag == 'CAbilBuild':
-            for child1 in atype_._children:
-                if child1.tag == 'InfoArray':
-                    for child2 in child1._children:
-                        if child2.tag == 'Button':
-                            if 'DefaultButtonFace' in child2.attrib.keys() and child2.attrib['DefaultButtonFace'] is not '':
-                                e_parsed_.append(atype_)
-        elif atype_.tag in ['CAbilEffectTarget','CAbilEffectInstant']:
-            if 'CmdButtonArray' in [child.tag for child in atype_._children]:
+            continue
+        if atype_.tag == 'CAbilAugment':
+            continue
+        list_tags_children = [child.tag for child in atype_._children]
+        if len(list_tags_children) == 0:
+            continue
+        if len(list_tags_children) == 1 and 'EditorCategories' in list_tags_children:
+            continue
+        if atype_.tag == 'CAbilTrain' and len(list_tags_children) == 1 and 'InfoArray' in list_tags_children:
+            continue
+        if atype_.tag in ['CAbilEffectTarget']:
+            if atype_.attrib['id'] == 'EnergyChannel': # bandage fix for unknown issue
                 e_parsed_.append(atype_)
-        else:
-            e_parsed_.append(atype_)
+            elif 'CmdButtonArray' in [child.tag for child in atype_._children]:
+                e_parsed_.append(atype_)
+            continue
+        e_parsed_.append(atype_)
     return e_parsed_
 
 def get_game_events(data_json_,list_player_name,replay):
@@ -64,15 +68,16 @@ def get_game_events(data_json_,list_player_name,replay):
     # Crab Infest ID
     try:
         list_crab_id = [2501, 2505] # T1 and T2+
-        crab_id_offset = np.where([abilData.attrib['id'] == 'Corruption2' for abilData in filter_abildata(list_abilData)])[0][0] - 121
+        crab_id_offset = np.where([abilData.attrib['id'] == 'Corruption2' for abilData in filter_abildata(list_abilData)])[0][0] - 155
         list_crab_id = [crab_id + crab_id_offset for crab_id in list_crab_id]
+        print(list_crab_id)
     except:
         list_crab_id = []
 
     # Bridge Targetting ID
     try:
         list_bridge_target_id = [2733, 2734, 2735, 2736, 2737, 2738, 2739, 2740, 2741, 2742, 2743, 2744, 2745]
-        list_bridge_target_id_offset = np.where([abilData.attrib['id'] == 'PowerOn5' for abilData in filter_abildata(list_abilData)])[0][0] - 337
+        list_bridge_target_id_offset = np.where([abilData.attrib['id'] == 'PowerOn5' for abilData in filter_abildata(list_abilData)])[0][0] - 416
         list_bridge_target_id = [bridge_target_id + list_bridge_target_id_offset for bridge_target_id in list_bridge_target_id]
     except:
         list_bridge_target_id = []
