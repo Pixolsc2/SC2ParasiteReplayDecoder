@@ -45,6 +45,9 @@ def filter_abildata(e_):
         e_parsed_.append(atype_)
     return e_parsed_
 
+def get_unit_type_name(unit_id_,list_unit_id_,list_unit_type_name_):
+    return list_unit_type_name_[[ii for ii,unit_id_tmp in enumerate(list_unit_id_) if unit_id_ == unit_id_tmp][0]]
+
 def get_game_events(data_json_,list_player_name,replay):
     output = []
     death_tracker = [None] * 12
@@ -70,7 +73,6 @@ def get_game_events(data_json_,list_player_name,replay):
         list_crab_id = [2501, 2505] # T1 and T2+
         crab_id_offset = np.where([abilData.attrib['id'] == 'Corruption2' for abilData in filter_abildata(list_abilData)])[0][0] - 155
         list_crab_id = [crab_id + crab_id_offset for crab_id in list_crab_id]
-        print(list_crab_id)
     except:
         list_crab_id = []
 
@@ -634,6 +636,23 @@ def get_game_events(data_json_,list_player_name,replay):
 
 
 
+    # Track Shuttle destruction
+    list_unit_id_shuttle = [event.unit.id for event in replay.events if
+                            event.name == 'UnitBornEvent' and event.unit_type_name == 'MengskWraith2']
+    list_event_shuttle_death = [event for event in replay.events if
+                                event.name == 'UnitDiedEvent' and event.unit.id in list_unit_id_shuttle]
+    for event in list_event_shuttle_death:
+        time_destroyed = event.frame
+        time_min = np.floor(time_destroyed / 1000. * 62.5 / 60).astype('int')
+        time_sec = np.floor(time_destroyed / 1000. * 62.5 % 60)
+        killing_unit = event.killing_unit
+        if killing_unit is not None and killing_unit.owner is not None:
+            id_src = killing_unit.owner.sid
+            name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
+            output.append([time_destroyed,'[%02d:%02d] A shuttle has been destroyed by %s' % (time_min, time_sec, name_src)])
+        elif killing_unit is not None:
+            name_src = 'Misc. Obj. (%s)' % get_unit_type_name(killing_unit.id, list_unit_id, list_unit_type_name)
+            output.append([time_destroyed, '[%02d:%02d] A shuttle has been destroyed by %s' % (time_min, time_sec,name_src)])
 
 
 
