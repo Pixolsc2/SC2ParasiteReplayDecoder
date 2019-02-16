@@ -46,7 +46,11 @@ def filter_abildata(e_):
     return e_parsed_
 
 def get_unit_type_name(unit_id_,list_unit_id_,list_unit_type_name_):
-    return list_unit_type_name_[[ii for ii,unit_id_tmp in enumerate(list_unit_id_) if unit_id_ == unit_id_tmp][0]]
+    try:
+        unit_type_name_ = list_unit_type_name_[[ii for ii,unit_id_tmp in enumerate(list_unit_id_) if unit_id_ == unit_id_tmp][0]]
+    except:
+        unit_type_name_ = 'N/A'
+    return unit_type_name_
 
 def get_game_events(data_json_,list_player_name,replay):
     output = []
@@ -653,6 +657,16 @@ def get_game_events(data_json_,list_player_name,replay):
         elif killing_unit is not None:
             name_src = 'Misc. Obj. (%s)' % get_unit_type_name(killing_unit.id, list_unit_id, list_unit_type_name)
             output.append([time_destroyed, '[%02d:%02d] A shuttle has been destroyed by %s' % (time_min, time_sec,name_src)])
+
+    # Track Station  Attacks
+    list_atks_on_station = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent', 'TargetUnitCommandEvent'] and event.ability_name == 'Attack' and get_unit_type_name(event.target.id, list_unit_id, list_unit_type_name) == 'SJSpaceStationMercenary']
+    for event in list_atks_on_station:
+        time_gameloop = event.frame
+        time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+        time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+        id_src = event.player.sid
+        name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
+        output.append([time_gameloop,'[%02d:%02d] Station has been attacked by %s' % (time_min, time_sec, name_src)])
 
 
 
