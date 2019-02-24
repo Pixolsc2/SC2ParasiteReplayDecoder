@@ -863,8 +863,13 @@ def main():
     for ii in range(num_players):
         if ii>0 and ii%3 == 0:
             print('')
-        tmp_metadata = ('[#%2d] [K: %3s] [G: %4s] [I: %2s] [S: %d%% ] [%-15s] [%3s] [%6s] ' % (ii+1, list_player_karma[ii], list_player_games[ii],
-                                     list_player_innocent[ii],100.*int(list_player_spawned[ii])/int(list_player_human[ii]),
+        try:
+            spawn_rate = '%d%%' %(100.*int(list_player_spawned[ii])/int(list_player_human[ii]))
+        except:
+            spawn_rate = 'N/A'
+        
+        tmp_metadata = ('[#%2d] [K: %3s] [G: %4s] [I: %2s] [S: %s ] [%-15s] [%3s] [%6s] ' % (ii+1, list_player_karma[ii], list_player_games[ii],
+                                     list_player_innocent[ii],spawn_rate,
                                      list_player_handles[ii], list_player_role[ii], list_player_color_txt[ii])).encode('utf-8')
         if len(list_player_clan[ii]) > 0:
             tmp_playername = ('<%s> %s'%(list_player_clan[ii],list_player_name[ii])).encode('utf-8')
