@@ -308,7 +308,6 @@ def get_game_events(data_json_,list_player_name,replay):
 
         # Evil Psion Alignment
         if 'm_upgradeTypeName' in datum.keys() and 'HaveaNegativePsionicAlignmentbelow' in datum['m_upgradeTypeName']:
-            print('hello')
             psionic_alignment = int(filter(str.isdigit,str(datum['m_upgradeTypeName'])))
             id_dst = datum['m_playerId'] - 1
             name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
@@ -319,7 +318,6 @@ def get_game_events(data_json_,list_player_name,replay):
 
         # Positive Psion Alignment
         if 'm_upgradeTypeName' in datum.keys() and 'HaveaPositivePsionicAlignmentabove' in datum['m_upgradeTypeName']:
-            print('hello')
             psionic_alignment = int(filter(str.isdigit,str(datum['m_upgradeTypeName'])))
             id_dst = datum['m_playerId'] - 1
             name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
