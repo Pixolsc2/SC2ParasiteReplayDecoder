@@ -736,7 +736,7 @@ def get_game_events(data_json_,list_player_name,replay):
         killing_unit = event.killing_unit
         if killing_unit is not None and killing_unit.owner is not None:
             id_src = killing_unit.owner.sid
-            if id_src > 12:
+            if id_src >= 12:
                 name_src = 'Alien A.I.'
             else:
                 name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
@@ -757,11 +757,40 @@ def get_game_events(data_json_,list_player_name,replay):
         killing_unit = event.killing_unit
         if killing_unit is not None and killing_unit.owner is not None:
             id_src = killing_unit.owner.sid
-            name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
+            if id_src >= 12:
+                name_src = 'Alien A.I.'
+            else:
+                name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
             output.append([time_destroyed,'[%02d:%02d] A shuttle has been destroyed by %s' % (time_min, time_sec, name_src)])
         elif killing_unit is not None:
             name_src = 'Misc. Obj. (%s)' % get_unit_type_name(killing_unit.id, list_unit_id, list_unit_type_name)
             output.append([time_destroyed, '[%02d:%02d] A shuttle has been destroyed by %s' % (time_min, time_sec,name_src)])
+
+    # Track blood test destruction
+    list_unit_id_bt = [event.unit.id for event in replay.events if
+                           event.name == 'UnitBornEvent' and event.unit_type_name == 'TechLab2']
+    list_event_bt_death = [event for event in replay.events if
+                               event.name == 'UnitDiedEvent' and event.unit.id in list_unit_id_bt]
+    for event in list_event_bt_death:
+        time_destroyed = event.frame
+        time_min = np.floor(time_destroyed / 1000. * 62.5 / 60).astype('int')
+        time_sec = np.floor(time_destroyed / 1000. * 62.5 % 60)
+        killing_unit = event.killing_unit
+        if killing_unit is not None and killing_unit.owner is not None:
+            id_src = killing_unit.owner.sid
+            print(id_src)
+            if id_src >= 12:
+                name_src = 'Alien A.I.'
+            else:
+                name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
+            output.append(
+                [time_destroyed,
+                 '[%02d:%02d] The Blood Tester has been destroyed by %s' % (time_min, time_sec, name_src)])
+        elif killing_unit is not None:
+            name_src = 'Misc. Obj. (%s)' % get_unit_type_name(killing_unit.id, list_unit_id, list_unit_type_name)
+            output.append(
+                [time_destroyed,
+                 '[%02d:%02d] The Blood Tester has been destroyed by %s' % (time_min, time_sec, name_src)])
 
     # Track Ship Attacks
     list_atks_on_station = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent',
@@ -812,6 +841,16 @@ def get_game_events(data_json_,list_player_name,replay):
         name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
         output.append([time_gameloop,'[%02d:%02d] Station has been attacked by %s' % (time_min, time_sec, name_src)])
 
+
+    # Track Security Module Attacks
+    list_atks_on_modules = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent', 'TargetUnitCommandEvent'] and event.ability_name == 'Attack' and get_unit_type_name(event.target.id, list_unit_id, list_unit_type_name) == 'PlatformPowerCore222']
+    for event in list_atks_on_modules:
+        time_gameloop = event.frame
+        time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+        time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+        id_src = event.player.sid
+        name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
+        output.append([time_gameloop,'[%02d:%02d] Security Module has been attacked by %s' % (time_min, time_sec, name_src)])
 
 
 
