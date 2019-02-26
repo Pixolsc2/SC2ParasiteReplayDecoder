@@ -296,6 +296,38 @@ def get_game_events(data_json_,list_player_name,replay):
             time_gameloop = datum['_gameloop']
             output.append([time_gameloop, '[%02d:%02d] %s is now an EVIL PSION' % (time_min, time_sec, name_dst)])
 
+        # Psionic Abilities
+        if 'm_upgradeTypeName' in datum.keys() and 'Unlock' in datum['m_upgradeTypeName']:
+            psionic_ability = str(datum['m_upgradeTypeName'])[6:]
+            id_dst = datum['m_playerId'] - 1
+            name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
+            time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
+            time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
+            time_gameloop = datum['_gameloop']
+            output.append([time_gameloop, '[%02d:%02d] %s unlocked %s' % (time_min, time_sec, name_dst,psionic_ability)])
+
+        # Evil Psion Alignment
+        if 'm_upgradeTypeName' in datum.keys() and 'HaveaNegativePsionicAlignmentbelow' in datum['m_upgradeTypeName']:
+            print('hello')
+            psionic_alignment = int(filter(str.isdigit,str(datum['m_upgradeTypeName'])))
+            id_dst = datum['m_playerId'] - 1
+            name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
+            time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
+            time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
+            time_gameloop = datum['_gameloop']
+            output.append([time_gameloop, '[%02d:%02d] %s\'s Psionic Alignment: -%d (EVIL)' % (time_min, time_sec, name_dst, psionic_alignment)])
+
+        # Positive Psion Alignment
+        if 'm_upgradeTypeName' in datum.keys() and 'HaveaPositivePsionicAlignmentabove' in datum['m_upgradeTypeName']:
+            print('hello')
+            psionic_alignment = int(filter(str.isdigit,str(datum['m_upgradeTypeName'])))
+            id_dst = datum['m_playerId'] - 1
+            name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
+            time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
+            time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
+            time_gameloop = datum['_gameloop']
+            output.append([time_gameloop, '[%02d:%02d] %s\'s Psionic Alignment: %d (GOOD)' % (time_min, time_sec, name_dst, psionic_alignment)])
+
         # Check who is Android
         if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'PlayerisAndroid':
             id_dst = datum['m_playerId'] - 1
@@ -858,6 +890,8 @@ def main():
 
 
     output = get_game_events(data_json,list_player_name,replay)
+
+    print('\n[Date of Replay: %s][Time Zone: %s]'%(replay.start_time,replay.time_zone))
 
     print('\nPlayer List:')
     for ii in range(num_players):
