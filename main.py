@@ -309,7 +309,6 @@ def get_game_events(data_json_,list_player_name,replay):
         # Psionic Abilities
         if 'm_upgradeTypeName' in datum.keys() and 'Upgrade' in datum['m_upgradeTypeName'][:7]:
             psionic_ability = str(datum['m_upgradeTypeName'])[7:]
-            print(psionic_ability)
             id_dst = datum['m_playerId'] - 1
             name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
             time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
