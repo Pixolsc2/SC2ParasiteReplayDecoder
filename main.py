@@ -158,6 +158,11 @@ def get_game_events(data_json_,list_player_name,replay):
         # Track radio jammer death
         if '_event' in datum.keys() and datum['_event'] == 'NNet.Replay.Tracker.SUnitDiedEvent':
             if datum['m_unitTagIndex'] in radiojammer_id_tracker:
+                id_src = datum['m_killerPlayerId'] - 1
+                if id_src >= 12:
+                    name_src = 'Alien A.I.'
+                else:
+                    name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
                 idx = np.where([datum['m_unitTagIndex'] == tracker_enum for tracker_enum in radiojammer_id_tracker])[0][
                     0]
                 id_dst = radiojammer_owner_tracker[idx]
@@ -165,8 +170,8 @@ def get_game_events(data_json_,list_player_name,replay):
                 time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
                 time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
                 time_gameloop = datum['_gameloop']
-                output.append([time_gameloop, '[%02d:%02d] %s\'s radio jammer has been destroyed' % (
-                time_min, time_sec, name_dst)])
+                output.append([time_gameloop, '[%02d:%02d] %s\'s radio jammer has been destroyed by %s' % (
+                time_min, time_sec, name_dst,name_src)])
                 radiojammer_id_tracker.pop(idx)
                 radiojammer_owner_tracker.pop(idx)
 
@@ -824,7 +829,7 @@ def get_game_events(data_json_,list_player_name,replay):
 
     # Track Ship Attacks
     list_atks_on_station = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent',
-                                                                               'TargetUnitCommandEvent'] and event.ability_name == 'Attack' and get_unit_type_name(
+                                                                               'TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and get_unit_type_name(
         event.target.id, list_unit_id, list_unit_type_name) == 'MengskWraith2']
     for event in list_atks_on_station:
         time_gameloop = event.frame
@@ -837,7 +842,7 @@ def get_game_events(data_json_,list_player_name,replay):
 
     # Track Ship Engine Attacks
     list_atks_on_station = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent',
-                                                                               'TargetUnitCommandEvent'] and event.ability_name == 'Attack' and get_unit_type_name(
+                                                                               'TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and get_unit_type_name(
         event.target.id, list_unit_id, list_unit_type_name) == 'SpaceshipEngine']
     for event in list_atks_on_station:
         time_gameloop = event.frame
@@ -850,7 +855,7 @@ def get_game_events(data_json_,list_player_name,replay):
 
     # Track Power Transformer Attacks
     list_atks_on_station = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent',
-                                                                               'TargetUnitCommandEvent'] and event.ability_name == 'Attack' and get_unit_type_name(
+                                                                               'TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and get_unit_type_name(
         event.target.id, list_unit_id, list_unit_type_name) == 'PlatformPowerCore']
     for event in list_atks_on_station:
         time_gameloop = event.frame
@@ -861,8 +866,8 @@ def get_game_events(data_json_,list_player_name,replay):
         output.append(
             [time_gameloop, '[%02d:%02d] Power Transformer has been attacked by %s' % (time_min, time_sec, name_src)])
 
-    # Track Station  Attacks
-    list_atks_on_station = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent', 'TargetUnitCommandEvent'] and event.ability_name == 'Attack' and get_unit_type_name(event.target.id, list_unit_id, list_unit_type_name) == 'SJSpaceStationMercenary']
+    # Track Station Attacks
+    list_atks_on_station = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent', 'TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and get_unit_type_name(event.target.id, list_unit_id, list_unit_type_name) == 'SJSpaceStationMercenary']
     for event in list_atks_on_station:
         time_gameloop = event.frame
         time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
@@ -873,7 +878,7 @@ def get_game_events(data_json_,list_player_name,replay):
 
 
     # Track Security Module Attacks
-    list_atks_on_modules = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent', 'TargetUnitCommandEvent'] and event.ability_name == 'Attack' and get_unit_type_name(event.target.id, list_unit_id, list_unit_type_name) == 'PlatformPowerCore222']
+    list_atks_on_modules = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent', 'TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and get_unit_type_name(event.target.id, list_unit_id, list_unit_type_name) == 'PlatformPowerCore222']
     for event in list_atks_on_modules:
         time_gameloop = event.frame
         time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
