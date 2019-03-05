@@ -21,7 +21,7 @@ This decodes .SC2Replay files for the game Parasite Zeta so that you may quickly
  * Chat Log Extraction (Differentiation of All-Chat, Observer-Chat, and Infested-Chat is included. Moderator-Speak is untested). Thanks to BrotherBear for experiments.
  * Alien Evolution Tracking
  * Alien Host risen from Spawn
- 
+ * I stopped modifying this list. Just check the change-history-log on main.py
 
 
 
