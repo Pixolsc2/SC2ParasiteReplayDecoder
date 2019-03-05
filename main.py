@@ -66,6 +66,21 @@ def filter_abildata(e_):
         e_parsed_.append(atype_)
     return e_parsed_
 
+list_names = {}
+list_names['SJMineralFormation2222'] = 'Black Hole'
+list_names['Beacon_TerranSmall2332322264'] = 'Head Crab'
+list_names['RoguePurifier'] = 'C.O.R.E'
+list_names['MengskWraith2'] = 'Shuttle'
+list_names['TechLab2'] = 'Blood Tester'
+list_names['SJSpaceStationMercenary'] = 'Station'
+list_names['WidowMineBurrowed2'] = 'Remote Mine'
+list_names['NovaAlarmBot'] = 'AIED'
+def substitute_name(original_name_):
+    if original_name_ in list_names.keys():
+        return list_names[original_name_]
+    else:
+        return original_name_
+
 def get_unit_type_name(unit_id_,list_unit_id_,list_unit_type_name_):
     try:
         unit_type_name_ = list_unit_type_name_[[ii for ii,unit_id_tmp in enumerate(list_unit_id_) if unit_id_ == unit_id_tmp][0]]
@@ -90,8 +105,11 @@ def get_game_events(data_json_,list_player_name,replay):
     station_life_modules_mtags = [86769665, 86245377, 85721089, 85458945, 85983233, 86507521]
     bunker_life_modules_mtags = [308543489, 267911169]
 
+
     map_archive = replay.map.archive.extract()
     list_abilData = xml.etree.ElementTree.fromstring(map_archive['Base.SC2Data\\GameData\\AbilData.xml'])
+    list_objects = xml.etree.ElementTree.fromstring(map_archive['Objects'])
+
 
     # Crab Infest ID
     try:
@@ -553,7 +571,7 @@ def get_game_events(data_json_,list_player_name,replay):
                             name_src = replay.entity[13].name + ' (AI) (%s)' % deaths[idx_min][2].name
                         else:
                             # unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if deaths[idx_min][2].id == tmp_unit_id][0]]
-                            unit_type_name = get_unit_type_name(deaths[idx_min][2].id, list_unit_id, list_unit_type_name)
+                            unit_type_name = substitute_name(get_unit_type_name(deaths[idx_min][2].id, list_unit_id, list_unit_type_name))
                             name_src = replay.entity[13].name + ' (AI) (%s)' % unit_type_name
                             # name_src = replay.entity[13].name + ' (AI) (unitId: %d)' % deaths[idx_min][2].id
                     elif id_src == 13:
@@ -561,12 +579,12 @@ def get_game_events(data_json_,list_player_name,replay):
                             name_src = replay.entity[14].name + ' (AI) (%s)' % deaths[idx_min][2].name
                         else:
                             # unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if deaths[idx_min][2].id == tmp_unit_id][0]]
-                            unit_type_name = get_unit_type_name(deaths[idx_min][2].id, list_unit_id, list_unit_type_name)
+                            unit_type_name = substitute_name(get_unit_type_name(deaths[idx_min][2].id, list_unit_id, list_unit_type_name))
                             name_src = replay.entity[14].name + ' (AI) (%s)' % unit_type_name
                             # name_src = replay.entity[14].name + ' (AI) (unitId: %d)' % deaths[idx_min][2].id
                     else:
                         # unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if deaths[idx_min][2].id == tmp_unit_id][0]]
-                        unit_type_name = get_unit_type_name(deaths[idx_min][2].id, list_unit_id, list_unit_type_name)
+                        unit_type_name = substitute_name(get_unit_type_name(deaths[idx_min][2].id, list_unit_id, list_unit_type_name))
                         name_src = 'Misc. Obj. (%s)' % unit_type_name
                         # name_src = 'Misc. Obj. (unitId: %d)' % deaths[idx_min][2].id
                     output.append(
@@ -580,7 +598,7 @@ def get_game_events(data_json_,list_player_name,replay):
                         idx_min = np.argmin([death[0] for death in deaths])
                         id_src = deaths[idx_min][2].id
                         # unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if deaths[idx_min][2].id == tmp_unit_id][0]]
-                        unit_type_name = get_unit_type_name(deaths[idx_min][2].id, list_unit_id, list_unit_type_name)
+                        unit_type_name = substitute_name(get_unit_type_name(deaths[idx_min][2].id, list_unit_id, list_unit_type_name))
                         name_src = ' (%s)' % unit_type_name
                         # name_src = ' (unitId: %d)'%id_src
                         list_ppl_who_atkd_marine = [person for person in list_ppl_who_atkd_marine if
@@ -625,7 +643,7 @@ def get_game_events(data_json_,list_player_name,replay):
                         name_src = replay.entity[13].name + ' (AI) (%s)' % marine.killing_unit.name
                     else:
                         # unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if marine.killing_unit.id == tmp_unit_id][0]]
-                        unit_type_name = get_unit_type_name(marine.killing_unit.id, list_unit_id, list_unit_type_name)
+                        unit_type_name = substitute_name(get_unit_type_name(marine.killing_unit.id, list_unit_id, list_unit_type_name))
                         name_src = replay.entity[13].name + ' (AI) (%s)' % unit_type_name
                         # name_src = replay.entity[13].name + ' (AI) (unitId: %d)' % marine.killing_unit.id
                 elif id_src == 13:
@@ -633,12 +651,12 @@ def get_game_events(data_json_,list_player_name,replay):
                         name_src = replay.entity[14].name + ' (AI) (%s)' % marine.killing_unit.name
                     else:
                         # unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if marine.killing_unit.id == tmp_unit_id][0]]
-                        unit_type_name = get_unit_type_name(marine.killing_unit.id, list_unit_id, list_unit_type_name)
+                        unit_type_name = substitute_name(get_unit_type_name(marine.killing_unit.id, list_unit_id, list_unit_type_name))
                         name_src = replay.entity[14].name + ' (AI) (%s)' % unit_type_name
                         # name_src = replay.entity[14].name + ' (AI) (unitId: %d)' % marine.killing_unit.id
                 else:
                     # unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if marine.killing_unit.id == tmp_unit_id][0]]
-                    unit_type_name = get_unit_type_name(marine.killing_unit.id, list_unit_id, list_unit_type_name)
+                    unit_type_name = substitute_name(get_unit_type_name(marine.killing_unit.id, list_unit_id, list_unit_type_name))
                     name_src = 'Misc. Obj. (%s)' % unit_type_name
                     # name_src = 'Misc. Obj. (unitId: %d)' % marine.killing_unit.id
                 output.append([time_gameloop, '[%02d:%02d] %s was killed by %s' % (
@@ -696,6 +714,7 @@ def get_game_events(data_json_,list_player_name,replay):
                 time_sec = np.floor(time_evo / 1000. * 62.5 % 60)
                 output.append([time_evo, '[%02d:%02d] Alien Evolution: Flying Crab (T5)' % (time_min, time_sec)])
 
+    # Track Android Evolution
     time_t800 = [[event.player.sid,event.frame] for event in replay.events if event.name == 'UpgradeCompleteEvent' and event.upgrade_type_name == 'ChassisSelectedT800']
     time_synth = [[event.player.sid,event.frame] for event in replay.events if event.name == 'UpgradeCompleteEvent' and event.upgrade_type_name == 'ChassisSelectedSyntheticForm']
     if len(time_t800) == 1 and len(time_synth) == 1 and time_t800[0][0] == time_synth[0][0]:
@@ -735,169 +754,181 @@ def get_game_events(data_json_,list_player_name,replay):
             name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
             output.append([time_destroyed,'[%02d:%02d] %s\'s AIED has been detonated/disarmed' % (time_min, time_sec, name_src)])
 
-
-    # Track Core destruction
-    list_unit_id_core = [event.unit.id for event in replay.events if
-                            event.name == 'UnitBornEvent' and event.unit_type_name == 'RoguePurifier']
-    list_event_core_death = [event for event in replay.events if
-                                event.name == 'UnitDiedEvent' and event.unit.id in list_unit_id_core]
-    for event in list_event_core_death:
-        time_destroyed = event.frame
-        time_min = np.floor(time_destroyed / 1000. * 62.5 / 60).astype('int')
-        time_sec = np.floor(time_destroyed / 1000. * 62.5 % 60)
-        killing_unit = event.killing_unit
-        if killing_unit is not None and killing_unit.owner is not None:
-            id_src = killing_unit.owner.sid
-            if id_src >= 12:
-                name_src = 'Alien A.I.'
+    def get_destruction_by_obj_name(output_,obj_name_disp_,obj_name_file_,disable_spam_):
+        list_unit_tmp_ = [event.unit.id for event in replay.events if event.name == 'UnitBornEvent' and event.unit_type_name == obj_name_file_]
+        list_event_death_ = [event for event in replay.events if event.name == 'UnitDiedEvent' and event.unit.id in list_unit_tmp_]
+        for event in list_event_death_:
+            time_destroyed = event.frame
+            time_min = np.floor(time_destroyed / 1000. * 62.5 / 60).astype('int')
+            time_sec = np.floor(time_destroyed / 1000. * 62.5 % 60)
+            killing_unit = event.killing_unit
+            if killing_unit is not None and killing_unit.owner is not None:
+                id_src = killing_unit.owner.sid
+                if id_src == 12:
+                    name_src = replay.entity[13].name + ' (AI) (%s)' % substitute_name(get_unit_type_name(killing_unit.id,list_unit_id,list_unit_type_name))
+                elif id_src == 13:
+                    name_src = replay.entity[14].name + ' (AI) (%s)' % substitute_name(get_unit_type_name(killing_unit.id,list_unit_id,list_unit_type_name))
+                else:
+                    name_src = list_player_name[id_src] + ' (#%02d) (%s)' % (1+id_src, substitute_name(get_unit_type_name(killing_unit.id,list_unit_id,list_unit_type_name)))
+                output.append([time_destroyed,'[%02d:%02d] %s has been destroyed by %s' % (time_min, time_sec, obj_name_disp_, name_src)])
+            elif killing_unit is not None:
+                name_src = 'Misc. Obj. (%s)' % substitute_name(get_unit_type_name(killing_unit.id, list_unit_id, list_unit_type_name))
+                output.append([time_destroyed,'[%02d:%02d] %s has been destroyed by %s' % (time_min, time_sec, obj_name_disp_, name_src)])
             else:
-                name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
-            output.append([time_destroyed,'[%02d:%02d] C.O.R.E. has been destroyed by %s' % (time_min, time_sec, name_src)])
-        elif killing_unit is not None:
-            name_src = 'Misc. Obj. (%s)' % get_unit_type_name(killing_unit.id, list_unit_id, list_unit_type_name)
-            output.append([time_destroyed, '[%02d:%02d] C.O.R.E. has been destroyed by %s' % (time_min, time_sec,name_src)])
+                if not disable_spam_:
+                    output.append([time_destroyed,'[%02d:%02d] %s has been destroyed' % (time_min, time_sec, obj_name_disp_)])
 
-    # Track Shuttle destruction
-    list_unit_id_shuttle = [event.unit.id for event in replay.events if
-                            event.name == 'UnitBornEvent' and event.unit_type_name == 'MengskWraith2']
-    list_event_shuttle_death = [event for event in replay.events if
-                                event.name == 'UnitDiedEvent' and event.unit.id in list_unit_id_shuttle]
-    for event in list_event_shuttle_death:
-        time_destroyed = event.frame
-        time_min = np.floor(time_destroyed / 1000. * 62.5 / 60).astype('int')
-        time_sec = np.floor(time_destroyed / 1000. * 62.5 % 60)
-        killing_unit = event.killing_unit
-        if killing_unit is not None and killing_unit.owner is not None:
-            id_src = killing_unit.owner.sid
-            if id_src >= 12:
-                name_src = 'Alien A.I.'
-            else:
-                name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
-            output.append([time_destroyed,'[%02d:%02d] A shuttle has been destroyed by %s' % (time_min, time_sec, name_src)])
-        elif killing_unit is not None:
-            name_src = 'Misc. Obj. (%s)' % get_unit_type_name(killing_unit.id, list_unit_id, list_unit_type_name)
-            output.append([time_destroyed, '[%02d:%02d] A shuttle has been destroyed by %s' % (time_min, time_sec,name_src)])
+    def get_attacks_by_obj_name(output_,obj_name_disp_,obj_name_file_):
+        list_atks = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent','TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and get_unit_type_name(event.target.id, list_unit_id, list_unit_type_name) == obj_name_file_]
+        for event in list_atks:
+            time_gameloop = event.frame
+            time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+            time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+            id_src = event.player.sid
+            name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
+            output_.append([time_gameloop, '[%02d:%02d] %s has been attacked by %s' % (time_min, time_sec, obj_name_disp_, name_src)])
 
-    # Track camera destruction
-    list_unit_id_shuttle = [event.unit.id for event in replay.events if
-                            event.name == 'UnitBornEvent' and event.unit_type_name == 'SentryGun2']
-    list_event_shuttle_death = [event for event in replay.events if
-                                event.name == 'UnitDiedEvent' and event.unit.id in list_unit_id_shuttle]
-    for event in list_event_shuttle_death:
-        time_destroyed = event.frame
-        time_min = np.floor(time_destroyed / 1000. * 62.5 / 60).astype('int')
-        time_sec = np.floor(time_destroyed / 1000. * 62.5 % 60)
-        killing_unit = event.killing_unit
-        if killing_unit is not None and killing_unit.owner is not None:
-            id_src = killing_unit.owner.sid
-            if id_src >= 12:
-                name_src = 'Alien A.I.'
-            else:
-                name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
-            output.append(
-                [time_destroyed, '[%02d:%02d] A camera has been destroyed by %s' % (time_min, time_sec, name_src)])
-        elif killing_unit is not None:
-            name_src = 'Misc. Obj. (%s)' % get_unit_type_name(killing_unit.id, list_unit_id, list_unit_type_name)
-            output.append(
-                [time_destroyed, '[%02d:%02d] A camera has been destroyed by %s' % (time_min, time_sec, name_src)])
+    def get_attacks_by_obj_loc(output_,obj_name_disp_,obj_name_file_):
+        obj_loc_blkcoord = [[float(val) for val in child.attrib['Position'].split(',')[0:2]] for child in
+                   list_objects._children if
+                   'UnitType' in child.keys() and child.attrib['UnitType'] == obj_name_file_]
+        list_atks = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent','TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and any([list(event.location[0:2]) == loc for loc in obj_loc_blkcoord])]
+        for event in list_atks:
+            time_gameloop = event.frame
+            time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+            time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+            id_src = event.player.sid
+            name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
+            output_.append([time_gameloop, '[%02d:%02d] %s has been attacked by %s' % (time_min, time_sec, obj_name_disp_, name_src)])
 
-    # Track blood test destruction
-    list_unit_id_bt = [event.unit.id for event in replay.events if
-                           event.name == 'UnitBornEvent' and event.unit_type_name == 'TechLab2']
-    list_event_bt_death = [event for event in replay.events if
-                               event.name == 'UnitDiedEvent' and event.unit.id in list_unit_id_bt]
-    for event in list_event_bt_death:
-        time_destroyed = event.frame
-        time_min = np.floor(time_destroyed / 1000. * 62.5 / 60).astype('int')
-        time_sec = np.floor(time_destroyed / 1000. * 62.5 % 60)
-        killing_unit = event.killing_unit
-        if killing_unit is not None and killing_unit.owner is not None:
-            id_src = killing_unit.owner.sid
-            print(id_src)
-            if id_src >= 12:
-                name_src = 'Alien A.I.'
-            else:
-                name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
-            output.append(
-                [time_destroyed,
-                 '[%02d:%02d] The Blood Tester has been destroyed by %s' % (time_min, time_sec, name_src)])
-        elif killing_unit is not None:
-            name_src = 'Misc. Obj. (%s)' % get_unit_type_name(killing_unit.id, list_unit_id, list_unit_type_name)
-            output.append(
-                [time_destroyed,
-                 '[%02d:%02d] The Blood Tester has been destroyed by %s' % (time_min, time_sec, name_src)])
+    get_destruction_by_obj_name(output,'C.O.R.E.','RoguePurifier',False)
+    get_destruction_by_obj_name(output,'A shuttle','MengskWraith2',False)
+    get_destruction_by_obj_name(output,'A camera','SentryGun2',True)
+    get_destruction_by_obj_name(output,'The blood tester','TechLab2',False)
+    get_destruction_by_obj_name(output,'Moon LZ-1486A','MoonLZ1486A',False)
+    get_destruction_by_obj_name(output,'Station','SJSpaceStationMercenary',False)
 
-    # Track Ship Attacks
-    list_atks_on_station = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent',
-                                                                               'TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and get_unit_type_name(
-        event.target.id, list_unit_id, list_unit_type_name) == 'MengskWraith2']
-    for event in list_atks_on_station:
+    get_attacks_by_obj_name(output, 'Shuttle', 'MengskWraith2')
+    get_attacks_by_obj_name(output, 'Shuttle engine', 'SpaceshipEngine')
+    get_attacks_by_obj_name(output, 'Power transformer', 'PlatformPowerCore')
+    get_attacks_by_obj_name(output, 'Station', 'SJSpaceStationMercenary')
+
+    get_attacks_by_obj_loc(output, 'Security Module', 'PlatformPowerCore222')
+    get_attacks_by_obj_loc(output, 'Radiator', 'PlatformPowerCore2')
+
+    # Black Hole Appears
+    list_bh_enter_events = [event for event in replay.events if event.name == 'UnitBornEvent' and event.unit_type_name == 'SJMineralFormation2222']
+    for event in list_bh_enter_events:
         time_gameloop = event.frame
         time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
         time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
-        id_src = event.player.sid
-        name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
-        output.append(
-            [time_gameloop, '[%02d:%02d] Shuttle has been attacked by %s' % (time_min, time_sec, name_src)])
+        output.append([time_gameloop,'[%02d:%02d] Black Hole has appeared.' % (time_min, time_sec)])
 
-    # Track Ship Engine Attacks
-    list_atks_on_station = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent',
-                                                                               'TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and get_unit_type_name(
-        event.target.id, list_unit_id, list_unit_type_name) == 'SpaceshipEngine']
-    for event in list_atks_on_station:
+    # Black Hole Exits
+    list_unit_id_bh = [event.unit.id for event in replay.events if event.name == 'UnitBornEvent' and event.unit_type_name == 'SJMineralFormation2222']
+    list_bh_exit_events = [event for event in replay.events if event.name == 'UnitDiedEvent' and event.unit.id in list_unit_id_bh]
+    for event in list_bh_exit_events:
         time_gameloop = event.frame
         time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
         time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
-        id_src = event.player.sid
-        name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
-        output.append(
-            [time_gameloop, '[%02d:%02d] Shuttle engine has been attacked by %s' % (time_min, time_sec, name_src)])
+        output.append([time_gameloop,'[%02d:%02d] Black Hole has exited.' % (time_min, time_sec)])
 
-    # Track Power Transformer Attacks
-    list_atks_on_station = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent',
-                                                                               'TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and get_unit_type_name(
-        event.target.id, list_unit_id, list_unit_type_name) == 'PlatformPowerCore']
-    for event in list_atks_on_station:
+    # Self Destruct Timer Enable/Disable
+    spinalarm_born_tracker = []
+    spinalarm_death_tracker = []
+    list_unit_id_spinalarm = [event.unit.id for event in replay.events if event.name == 'UnitBornEvent' and event.unit_type_name == 'SJMineralFormation22234']
+    list_event_spinalarm_born = [event for event in replay.events if event.name == 'UnitBornEvent' and event.unit_type_name == 'SJMineralFormation22234']
+    list_event_spinalarm_death = [event for event in replay.events if event.name == 'UnitDiedEvent' and event.unit.id in list_unit_id_spinalarm]
+    for event in list_event_spinalarm_born:
         time_gameloop = event.frame
         time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
         time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
-        id_src = event.player.sid
-        name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
-        output.append(
-            [time_gameloop, '[%02d:%02d] Power Transformer has been attacked by %s' % (time_min, time_sec, name_src)])
+        if len(spinalarm_born_tracker) > 0 and abs(time_gameloop - spinalarm_born_tracker[-1][0]) < 5:
+            spinalarm_born_tracker[-1][-1] = spinalarm_born_tracker[-1][-1] + 1
+        else:
+            spinalarm_born_tracker.append([time_gameloop, time_min, time_sec, 1])
 
-    # Track Station Attacks
-    list_atks_on_station = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent', 'TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and get_unit_type_name(event.target.id, list_unit_id, list_unit_type_name) == 'SJSpaceStationMercenary']
-    for event in list_atks_on_station:
+    for event in list_event_spinalarm_death:
         time_gameloop = event.frame
         time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
         time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
-        id_src = event.player.sid
-        name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
-        output.append([time_gameloop,'[%02d:%02d] Station has been attacked by %s' % (time_min, time_sec, name_src)])
+        if len(spinalarm_death_tracker) > 0 and abs(time_gameloop - spinalarm_death_tracker[-1][0]) < 5:
+            spinalarm_death_tracker[-1][-1] = spinalarm_death_tracker[-1][-1] + 1
+        else:
+            spinalarm_death_tracker.append([time_gameloop, time_min, time_sec, 1])
+
+    for ii in range(len(spinalarm_born_tracker)):
+        if spinalarm_born_tracker[ii][3] > 30:
+            output.append([spinalarm_born_tracker[ii][0], '[%02d:%02d] Self-destruct sequence enabled' % (spinalarm_born_tracker[ii][1], spinalarm_born_tracker[ii][2])])
+
+    for ii in range(len(spinalarm_death_tracker)):
+        if spinalarm_death_tracker[ii][3] > 30:
+            output.append([spinalarm_death_tracker[ii][0], '[%02d:%02d] Self-destruct sequence cancelled' % (spinalarm_death_tracker[ii][1], spinalarm_death_tracker[ii][2])])
 
 
-    # Track Security Module Attacks
-    list_atks_on_modules = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent', 'TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and get_unit_type_name(event.target.id, list_unit_id, list_unit_type_name) == 'PlatformPowerCore222']
-    for event in list_atks_on_modules:
+    # Self Destruct Reactor Switches
+    spinalarm_born_tracker = []
+    spinalarm_death_tracker = []
+    list_unit_id_spinalarm = [event.unit.id for event in replay.events if event.name == 'UnitBornEvent' and event.unit_type_name == 'SpiningAlarmYellow2']
+    list_event_spinalarm_born = [event for event in replay.events if event.name == 'UnitBornEvent' and event.unit_type_name == 'SpiningAlarmYellow2']
+    list_event_spinalarm_death = [event for event in replay.events if event.name == 'UnitDiedEvent' and event.unit.id in list_unit_id_spinalarm]
+    for event in list_event_spinalarm_born:
         time_gameloop = event.frame
         time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
         time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
-        id_src = event.player.sid
-        name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
-        output.append([time_gameloop,'[%02d:%02d] Security Module has been attacked by %s' % (time_min, time_sec, name_src)])
+        if len(spinalarm_born_tracker) > 0 and abs(time_gameloop - spinalarm_born_tracker[-1][0]) < 5:
+            spinalarm_born_tracker[-1][-1] = spinalarm_born_tracker[-1][-1] + 1
+        else:
+            spinalarm_born_tracker.append([time_gameloop, time_min, time_sec, 1])
 
+    for event in list_event_spinalarm_death:
+        time_gameloop = event.frame
+        time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+        time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+        if len(spinalarm_death_tracker) > 0 and abs(time_gameloop - spinalarm_death_tracker[-1][0]) < 5:
+            spinalarm_death_tracker[-1][-1] = spinalarm_death_tracker[-1][-1] + 1
+        else:
+            spinalarm_death_tracker.append([time_gameloop, time_min, time_sec, 1])
 
+    for ii in range(len(spinalarm_born_tracker)):
+        if spinalarm_born_tracker[ii][3] > 1:
+            output.append([spinalarm_born_tracker[ii][0], '[%02d:%02d] Self Destruct Switch Enabled (A)' % (spinalarm_born_tracker[ii][1], spinalarm_born_tracker[ii][2])])
 
+    for ii in range(len(spinalarm_death_tracker)):
+        if spinalarm_death_tracker[ii][3] > 1:
+            output.append([spinalarm_death_tracker[ii][0], '[%02d:%02d] Self Destruct Switch Disabled (A)' % (spinalarm_death_tracker[ii][1], spinalarm_death_tracker[ii][2])])
 
+    # Self Destruct Reactor Switches
+    spinalarm_born_tracker = []
+    spinalarm_death_tracker = []
+    list_unit_id_spinalarm = [event.unit.id for event in replay.events if event.name == 'UnitBornEvent' and event.unit_type_name == 'SpiningAlarmYellow22']
+    list_event_spinalarm_born = [event for event in replay.events if event.name == 'UnitBornEvent' and event.unit_type_name == 'SpiningAlarmYellow22']
+    list_event_spinalarm_death = [event for event in replay.events if event.name == 'UnitDiedEvent' and event.unit.id in list_unit_id_spinalarm]
+    for event in list_event_spinalarm_born:
+        time_gameloop = event.frame
+        time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+        time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+        if len(spinalarm_born_tracker) > 0 and abs(time_gameloop - spinalarm_born_tracker[-1][0]) < 5:
+            spinalarm_born_tracker[-1][-1] = spinalarm_born_tracker[-1][-1] + 1
+        else:
+            spinalarm_born_tracker.append([time_gameloop, time_min, time_sec, 1])
 
+    for event in list_event_spinalarm_death:
+        time_gameloop = event.frame
+        time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+        time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+        if len(spinalarm_death_tracker) > 0 and abs(time_gameloop - spinalarm_death_tracker[-1][0]) < 5:
+            spinalarm_death_tracker[-1][-1] = spinalarm_death_tracker[-1][-1] + 1
+        else:
+            spinalarm_death_tracker.append([time_gameloop, time_min, time_sec, 1])
 
+    for ii in range(len(spinalarm_born_tracker)):
+        if spinalarm_born_tracker[ii][3] > 1:
+            output.append([spinalarm_born_tracker[ii][0], '[%02d:%02d] Self Destruct Switch Enabled (B)' % (spinalarm_born_tracker[ii][1], spinalarm_born_tracker[ii][2])])
 
-
-
-
-
-
+    for ii in range(len(spinalarm_death_tracker)):
+        if spinalarm_death_tracker[ii][3] > 1:
+            output.append([spinalarm_death_tracker[ii][0], '[%02d:%02d] Self Destruct Switch Disabled (B)' % (spinalarm_death_tracker[ii][1], spinalarm_death_tracker[ii][2])])
 
 
 
