@@ -792,7 +792,7 @@ def get_game_events(data_json_,list_player_name,replay):
         obj_loc_blkcoord = [[float(val) for val in child.attrib['Position'].split(',')[0:2]] for child in
                    list_objects._children if
                    'UnitType' in child.keys() and child.attrib['UnitType'] == obj_name_file_]
-        list_atks = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent','TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and any([list(event.location[0:2]) == loc for loc in obj_loc_blkcoord])]
+        list_atks = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent','TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and any([check_dist(list(event.location[0:2]),loc)<3. for loc in obj_loc_blkcoord])]
         for event in list_atks:
             time_gameloop = event.frame
             time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
@@ -810,11 +810,11 @@ def get_game_events(data_json_,list_player_name,replay):
 
     get_attacks_by_obj_name(output, 'Shuttle', 'MengskWraith2')
     get_attacks_by_obj_name(output, 'Shuttle engine', 'SpaceshipEngine')
-    get_attacks_by_obj_name(output, 'Power transformer', 'PlatformPowerCore')
     get_attacks_by_obj_name(output, 'Station', 'SJSpaceStationMercenary')
 
     get_attacks_by_obj_loc(output, 'Security Module', 'PlatformPowerCore222')
     get_attacks_by_obj_loc(output, 'Radiator', 'PlatformPowerCore2')
+    get_attacks_by_obj_loc(output, 'Power transformer', 'PlatformPowerCore')
 
     # Black Hole Appears
     list_bh_enter_events = [event for event in replay.events if event.name == 'UnitBornEvent' and event.unit_type_name == 'SJMineralFormation2222']
