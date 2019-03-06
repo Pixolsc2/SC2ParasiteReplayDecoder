@@ -802,7 +802,7 @@ def get_game_events(data_json_,list_player_name,replay):
             output_.append([time_gameloop, '[%02d:%02d] %s has been attacked by %s' % (time_min, time_sec, obj_name_disp_, name_src)])
 
     get_destruction_by_obj_name(output,'C.O.R.E.','RoguePurifier',False)
-    get_destruction_by_obj_name(output,'A shuttle','MengskWraith2',False)
+    get_destruction_by_obj_name(output,'A shuttle','MengskWraith2',True)
     get_destruction_by_obj_name(output,'A camera','SentryGun2',True)
     get_destruction_by_obj_name(output,'The blood tester','TechLab2',False)
     get_destruction_by_obj_name(output,'Moon LZ-1486A','MoonLZ1486A',False)
