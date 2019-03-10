@@ -1,5 +1,6 @@
 import sc2reader
 import numpy as np
+from matplotlib import path
 import subprocess
 import json
 import sys
@@ -82,6 +83,8 @@ list_names['TechLab2'] = 'Blood Tester'
 list_names['SJSpaceStationMercenary'] = 'Station'
 list_names['WidowMineBurrowed2'] = 'Remote Mine'
 list_names['NovaAlarmBot'] = 'AIED'
+list_names['HelsAngelAssault'] = 'T-800 Eliminator'
+
 def substitute_name(original_name_):
     if original_name_ in list_names.keys():
         return list_names[original_name_]
@@ -94,6 +97,545 @@ def get_unit_type_name(unit_id_,list_unit_id_,list_unit_type_name_):
     except:
         unit_type_name_ = 'N/A'
     return unit_type_name_
+
+
+def get_location(location_):
+    for region_num in range(len(list_regions)):
+        p = path.Path(list_regions[region_num][1])
+        if p.contains_points([location_[:2]]):
+            return list_regions[region_num][0]
+    return 'Unknown Location'
+
+list_regions = [
+    ['Ship #1',
+        [
+            [5.2433,2.5596],
+            [20.2221,    2.4348],
+            [20.3469,   25.0278],
+            [6.2419,   25.2774],
+        ]
+    ],
+
+    ['Ship #2',
+        [
+            [21.0959,    2.3099],
+            [36.4491,    2.4348],
+            [36.5739,   25.2774],
+            [21.9696,   25.4023],
+        ]
+    ],
+
+    ['Ship #3',
+        [
+            [37.6974,    2.6844],
+            [52.3017,    2.5596],
+            [52.8010,   25.1526],
+            [37.9470,   25.1526],
+        ]
+    ],
+
+    ['Ship #4',
+        [
+            [147.2922,    6.8036],
+            [157.1533,    6.3043],
+            [162.6455,   11.9213],
+            [162.3959,   29.1470],
+            [147.6667,   29.1470],
+        ]
+    ],
+
+    ['Ship #5',
+        [
+            [5.4929,   68.7992],
+            [20.2221,   68.7992],
+            [20.2221,   91.2674],
+            [5.6594,   91.1842],
+        ]
+    ],
+
+    ['Ship #6',
+        [
+            [21.4703,   68.6327],
+            [36.3659,   68.7160],
+            [36.4491,   91.1842],
+            [21.8032,   91.2674],
+        ]
+    ],
+
+    ['Ship #7',
+        [
+            [37.3645,   68.6327],
+            [52.2601,   68.8824],
+            [52.4265,   91.2674],
+            [38.1966,   91.1009],
+        ]
+    ],
+
+    ['Ship #8',
+        [
+            [53.2587,   68.7160],
+            [67.9878,   68.7160],
+            [68.1542,   91.2674],
+            [53.9244,   91.2674],
+        ]
+    ],
+
+    ['Station Lvl 1',
+        [
+            [6.7412,   26.6609],
+            [57.7939,   26.5361],
+            [62.1627,   29.6567],
+            [70.7755,   29.6567],
+            [70.7755,   37.5205],
+            [61.5386,   39.0184],
+            [61.1641,   48.2553],
+            [68.9032,   48.0057],
+            [68.7784,   63.6086],
+            [64.6592,   67.3533],
+            [10.3610,   67.4781],
+        ]
+    ],
+
+    ['Station Lvl 2',
+        [
+            [215.1522,   39.5190],
+            [215.1522,   31.2495],
+            [227.7942,   30.8693],
+            [230.3606,   28.5880],
+            [230.8358,   16.3262],
+            [227.9843,   12.3340],
+            [227.6041,    7.0111],
+            [231.9765,    1.4030],
+            [256.2148,    1.1178],
+            [254.3138,  102.8240],
+            [250.3216,  106.9112],
+            [220.1900,  107.1013],
+            [215.4373,  102.5388],
+            [215.3423,   93.1286],
+            [221.2355,   86.8551],
+            [210.7798,   80.5817],
+            [209.9243,   74.5934],
+            [204.1261,   70.0309],
+            [204.3162,   65.6585],
+            [208.6886,   64.1376],
+            [206.9777,   62.0465],
+            [208.3084,   44.7469],
+        ]
+    ],
+
+
+
+    ['Station Lvl 3',
+        [
+            [160.6871,  108.9311],
+            [155.5543,  104.2260],
+            [155.2691,   75.5677],
+            [160.2594,   71.0052],
+            [167.1032,   69.8645],
+            [166.9606,   64.0188],
+            [165.3922,   60.1692],
+            [164.8219,   52.7551],
+            [161.2574,   51.3293],
+            [161.2574,   38.0695],
+            [194.9060,   38.0695],
+            [195.0486,   51.0441],
+            [197.7576,   53.8957],
+            [206.4549,   54.3234],
+            [206.1697,   61.3098],
+            [195.4763,   62.1653],
+            [193.4802,   69.1516],
+            [202.6053,   70.8626],
+            [206.4549,   75.4251],
+            [206.5975,  103.9408],
+            [202.0349,  109.2162],
+        ]
+    ],
+
+    ['Station Lvl 4',
+        [
+            [57.7691,   24.3106],
+            [57.6741,    9.0072],
+            [61.7613,    4.5397],
+            [84.3838,    4.5397],
+            [88.0908,   10.6231],
+            [94.0791,   10.5280],
+            [95.4099,   18.9877],
+            [101.2081,   18.8926],
+            [101.3031,    7.2962],
+            [104.3448,    4.0645],
+            [120.1235,    4.4447],
+            [124.4009,    9.0072],
+            [124.5910,   24.5958],
+            [121.4542,   27.6375],
+            [101.1130,   28.0177],
+            [100.7328,   47.1232],
+            [62.1415,   47.1232],
+            [62.2366,   41.5151],
+            [71.1715,   40.4696],
+            [74.8785,   35.0516],
+            [80.7718,   34.2911],
+            [80.7718,   30.3940],
+            [75.9241,   29.9187],
+            [72.6923,   27.4474],
+            [61.7613,   27.4474],
+        ]
+    ],
+
+
+    ['Station Lvl 5',
+        [
+            [95.6000,   54.8225],
+            [102.3487,   54.5373],
+            [102.6339,   48.4540],
+            [101.7784,   46.7430],
+            [101.8734,   30.6792],
+            [109.5727,   29.0633],
+            [124.3058,   28.8732],
+            [124.9712,   54.9175],
+            [132.4803,   54.8225],
+            [132.4803,   66.3238],
+            [130.0090,   68.9853],
+            [130.3892,   72.4072],
+            [132.4803,   74.2132],
+            [132.1952,   95.2198],
+            [116.5115,   95.2198],
+            [105.7706,   84.6689],
+            [105.5805,   77.4450],
+            [111.0935,   72.1220],
+            [110.9985,   69.4605],
+            [98.6417,   69.4605],
+            [95.4099,   66.5139],
+        ]
+    ],
+
+    ['Station Lvl 6',
+        [
+            [162.9605,   11.0983],
+            [157.8276,    6.0606],
+            [157.8276,    0.4525],
+            [171.9905,    0.3574],
+            [187.9593,    2.5436],
+            [212.8630,    2.5436],
+            [226.2654,    3.0189],
+            [227.1103,    7.0111],
+            [227.5328,   12.3340],
+            [230.3632,   16.4741],
+            [229.8985,   28.3451],
+            [227.5328,   30.2884],
+            [165.4530,   29.3959],
+            [165.7381,   14.2826],
+        ]
+    ],
+
+
+    ['Station Lvl 7',
+        [
+            [126.9871,    5.1635],
+            [145.8708,    4.7833],
+            [146.5045,   29.5603],
+            [144.6035,   32.6654],
+            [144.6035,   39.1923],
+            [141.6252,   43.1845],
+            [140.3578,   52.8165],
+            [138.1399,   54.0205],
+            [128.5079,   53.9571],
+            [125.9098,   51.2956],
+            [125.5930,   41.0933],
+        ]
+    ],
+
+    ['Bunker Lvl 1',
+        [
+            [117.2567,  132.1472],
+            [117.2567,  110.5924],
+            [184.5181,  110.4625],
+            [184.7778,  145.2619],
+            [176.8571,  147.7290],
+            [175.0392,  154.7408],
+            [168.4169,  157.0781],
+            [166.8588,  159.5452],
+            [160.7559,  160.0646],
+            [155.4321,  165.7780],
+            [147.9009,  165.3884],
+            [142.4472,  161.3631],
+            [134.7862,  155.7796],
+            [128.1639,  154.6110],
+            [116.8671,  144.2231],
+        ]
+    ],
+
+    ['Bunker Lvl 2',
+        [
+            [195.4258,  158.7690],
+            [224.0154,  158.5314],
+            [224.3322,  197.2580],
+            [195.9010,  197.3372],
+        ]
+    ],
+
+    ['Core',
+        [
+            [225.4554,  158.4522],
+            [256.4208,  158.4522],
+            [256.4208,  197.3372],
+            [225.0594,  197.3372],
+        ]
+    ],
+
+    ['Moon Cave',
+        [
+            [80.8522,  256.0007],
+            [81.1375,  178.3947],
+            [91.5516,  169.6926],
+            [108.5279,  169.6926],
+            [120.7965,  156.9960],
+            [131.4958,  156.5680],
+            [137.7728,  162.2743],
+            [136.7742,  170.8338],
+            [130.0692,  176.2548],
+            [130.3546,  179.9639],
+            [133.4930,  183.1024],
+            [131.4958,  193.3738],
+            [127.6441,  196.2270],
+            [128.7853,  203.7878],
+            [128.6427,  214.2019],
+            [120.9391,  222.6187],
+            [120.2258,  256.4287],
+        ]
+    ],
+
+    ['Moon Surface',
+        [
+            [119.7979,  256.5713],
+            [120.3685,  222.7614],
+            [128.0720,  214.3445],
+            [128.3573,  203.7878],
+            [127.2161,  196.9403],
+            [132.2091,  193.5165],
+            [139.0567,  195.7990],
+            [149.0428,  196.3696],
+            [187.1325,  198.2955],
+            [196.8332,  207.2830],
+            [196.4052,  219.1949],
+            [202.6822,  225.8998],
+            [202.5395,  231.3208],
+            [199.6864,  234.3167],
+            [198.5451,  242.3055],
+            [195.1213,  245.8720],
+            [194.6933,  256.5713],
+        ]
+    ],
+
+    ['Reactor',
+        [
+            [10.9370,  104.8616],
+            [19.3160,   96.0417],
+            [30.3409,   95.0127],
+            [54.3019,   93.2487],
+            [66.0619,   92.8077],
+            [74.5879,  101.9217],
+            [84.2898,  101.1867],
+            [91.0518,   96.4827],
+            [100.9008,   96.6297],
+            [108.9858,  106.1846],
+            [109.4268,  113.2406],
+            [115.1598,  134.5556],
+            [115.4538,  154.5475],
+            [103.3998,  167.6305],
+            [90.0228,  167.6305],
+            [78.4098,  177.3325],
+            [39.3079,  176.7445],
+            [28.8709,  165.2785],
+            [20.6390,  168.8065],
+            [4.4690,  155.5765],
+            [5.6450,  145.2866],
+            [5.4980,  132.7916],
+            [15.7880,  123.0896],
+            [10.0550,  114.4166],
+        ]
+    ],
+
+    ['Even Vents',
+        [
+            [69.8104,   48.7872],
+            [102.0850,   48.6076],
+            [102.0196,   53.5076],
+            [94.7023,   54.2916],
+            [94.7023,   70.4289],
+            [108.0303,   70.8862],
+            [109.3370,   73.1728],
+            [104.7636,   77.0928],
+            [104.6983,   88.3302],
+            [109.3370,   88.9182],
+            [112.3423,   92.0541],
+            [112.7343,   95.9741],
+            [135.9929,   97.0195],
+            [136.4502,  109.0408],
+            [110.0556,  109.3674],
+            [108.5530,  101.5275],
+            [105.2210,  101.0701],
+            [101.4970,   96.5621],
+            [101.1050,   93.6221],
+            [88.5610,   94.2755],
+            [87.9077,   97.9995],
+            [86.2743,   99.0448],
+            [74.5797,  100.4168],
+            [68.6997,   94.6675],
+        ]
+    ],
+
+    ['Odd Vents',
+        [
+            [145.4662,   33.3221],
+            [146.9362,   30.7741],
+            [199.3661,   30.8721],
+            [212.4001,   31.0681],
+            [212.4001,   40.3781],
+            [207.4021,   44.8861],
+            [205.7361,   52.9221],
+            [198.2881,   52.8241],
+            [195.9361,   50.0801],
+            [195.8381,   36.9481],
+            [160.6562,   36.7521],
+            [160.0682,   52.2361],
+            [164.1842,   53.4121],
+            [164.7722,   64.0940],
+            [166.1442,   65.2700],
+            [166.1442,   68.9940],
+            [158.9902,   70.2680],
+            [157.8142,   72.7180],
+            [153.0122,   73.5020],
+            [153.1102,  109.2720],
+            [138.2142,  109.6640],
+            [136.9402,   96.3360],
+            [133.9022,   95.5520],
+            [133.5102,   74.3840],
+            [131.3542,   72.1300],
+            [131.4522,   69.3860],
+            [133.5102,   66.6420],
+            [133.6082,   55.1761],
+            [140.9582,   54.4901],
+            [142.0362,   48.3161],
+            [144.1922,   41.5663],
+            [145.4662,   38.4303],
+        ]
+    ],
+
+    ['Spacewalk',
+        [
+            [185.9711,  110.8559],
+            [202.7003,  110.4757],
+            [207.8331,  103.4418],
+            [208.4985,   83.3857],
+            [214.3918,   84.1462],
+            [215.2472,   87.3779],
+            [214.9621,   92.1306],
+            [214.7720,  102.7764],
+            [219.7147,  107.7192],
+            [256.5951,  107.5291],
+            [256.5951,  119.9809],
+            [186.5414,  120.6463],
+        ]
+    ],
+
+    ['Space',
+        [
+            [186.4463,  121.3592],
+            [256.4525,  121.0740],
+            [256.4525,  157.7167],
+            [186.3038,  156.7187],
+        ]
+    ],
+
+    ['Deep Tunnel',
+        [
+            [216.1978,  198.8210],
+            [256.4049,  198.8210],
+            [256.3099,  207.5658],
+            [216.1978,  207.5658],
+        ]
+    ],
+
+    ['Moon Garage',
+        [
+            [198.1378,  199.6824],
+            [215.6274,  198.8270],
+            [215.7225,  207.9520],
+            [256.0247,  208.5223],
+            [256.0247,  216.5067],
+            [243.9531,  216.5067],
+            [237.8697,  221.0692],
+            [233.0220,  256.1436],
+            [195.2862,  256.5238],
+            [195.6664,  246.3532],
+            [199.6586,  242.1709],
+            [200.5141,  234.5667],
+            [203.0805,  231.7151],
+            [203.3657,  225.8219],
+            [197.3774,  219.0731],
+        ]
+    ],
+
+    ['Desert Surface',
+        [
+            [0.7852,  164.6794],
+            [38.9962,  177.6540],
+            [80.4866,  178.3669],
+            [80.0589,  256.5000],
+            [0.6426,  256.2149],
+        ]
+    ],
+
+    ['Catacombs',
+        [
+            [138.2310,  164.0140],
+            [142.6985,  162.5882],
+            [147.6412,  166.2002],
+            [155.5305,  166.4854],
+            [161.2337,  161.0674],
+            [167.2220,  160.4020],
+            [175.6817,  155.5543],
+            [194.4070,  158.6911],
+            [194.6921,  197.7576],
+            [139.3716,  195.0011],
+            [132.4328,  192.5297],
+            [134.6190,  183.1196],
+        ]
+    ],
+
+    ['Special Ship',
+        [
+            [238.3000,  221.2063],
+            [244.0716,  216.9592],
+            [256.4317,  217.1225],
+            [256.4317,  256.4352],
+            [233.5628,  256.0541],
+        ]
+    ],
+]
+for region_num in range(len(list_regions)):
+    for point_num in range(len(list_regions[region_num][1])):
+        list_regions[region_num][1][point_num][1] = 256-list_regions[region_num][1][point_num][1]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def get_game_events(data_json_,list_player_name,replay):
     output = []
@@ -178,7 +720,8 @@ def get_game_events(data_json_,list_player_name,replay):
             time_gameloop = datum['_gameloop']
             radiojammer_id_tracker.append(datum['m_unitTagIndex'])
             radiojammer_owner_tracker.append(id_dst)
-            output.append([time_gameloop, '[%02d:%02d] %s placed a radio jammer' % (time_min, time_sec, name_dst)])
+            loc = ' (%s)'%get_location((datum["m_x"],datum["m_y"]))
+            output.append([time_gameloop, '[%02d:%02d] %s placed a radio jammer' % (time_min, time_sec, name_dst) + loc])
 
         # Track radio jammer death
         if '_event' in datum.keys() and datum['_event'] == 'NNet.Replay.Tracker.SUnitDiedEvent':
@@ -198,8 +741,8 @@ def get_game_events(data_json_,list_player_name,replay):
                 time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
                 time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
                 time_gameloop = datum['_gameloop']
-                output.append([time_gameloop, '[%02d:%02d] %s\'s radio jammer has been destroyed by %s' % (
-                time_min, time_sec, name_dst,name_src)])
+                loc = ' (%s)'%get_location((datum["m_x"],datum["m_y"]))
+                output.append([time_gameloop, '[%02d:%02d] %s\'s radio jammer has been destroyed by %s' % (time_min, time_sec, name_dst,name_src) + loc])
                 radiojammer_id_tracker.pop(idx)
                 radiojammer_owner_tracker.pop(idx)
 
@@ -215,7 +758,8 @@ def get_game_events(data_json_,list_player_name,replay):
             time_gameloop = datum['_gameloop']
             remotemine_id_tracker.append(datum['m_unitTagIndex'])
             remotemine_owner_tracker.append(id_dst)
-            output.append([time_gameloop, '[%02d:%02d] %s placed a remote mine' % (time_min, time_sec, name_dst)])
+            loc = ' (%s)'%get_location((datum["m_x"],datum["m_y"]))
+            output.append([time_gameloop, '[%02d:%02d] %s placed a remote mine' % (time_min, time_sec, name_dst) + loc])
 
         # Track remote mine detonations
         if '_event' in datum.keys() and datum['_event'] == 'NNet.Replay.Tracker.SUnitDiedEvent':
@@ -227,8 +771,8 @@ def get_game_events(data_json_,list_player_name,replay):
                 time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
                 time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
                 time_gameloop = datum['_gameloop']
-                output.append([time_gameloop, '[%02d:%02d] %s\'s remote mine has been detonated/disarmed' % (
-                time_min, time_sec, name_dst)])
+                loc = ' (%s)'%get_location((datum["m_x"],datum["m_y"]))
+                output.append([time_gameloop, '[%02d:%02d] %s\'s remote mine has been detonated/disarmed' % (time_min, time_sec, name_dst) + loc])
                 remotemine_id_tracker.pop(idx)
                 remotemine_owner_tracker.pop(idx)
 
@@ -279,26 +823,6 @@ def get_game_events(data_json_,list_player_name,replay):
                     else:
                         tank_tracker.append([time_gameloop, time_min, time_sec, tank_num + 1, 1])
                     break
-
-        # # Track player deaths
-        # if '_event' in datum.keys() and datum['_event'] == 'NNet.Replay.Tracker.SUnitDiedEvent':
-        #     if datum['m_unitTagIndex'] in death_tracker:
-        #         id_dst = np.where([datum['m_unitTagIndex'] == tracker_enum for tracker_enum in death_tracker])[0][0]
-        #         death_tracker[id_dst] = None
-        #         name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
-        #         time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
-        #         time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
-        #         time_gameloop = datum['_gameloop']
-        #         if datum['m_killerPlayerId'] is not None:
-        #             id_src = datum['m_killerPlayerId'] - 1
-        #             if id_src >= 0 and id_src <= 11:
-        #                 name_src = list_player_name[id_src] + ' (#%02d)'%(1+id_src)
-        #             else:
-        #                 name_src = 'Misc. Obj.'
-        #         else:
-        #             name_src = 'Misc. Obj.'
-        #         output.append(
-        #             [time_gameloop, '[%02d:%02d] %s was killed by %s' % (time_min, time_sec, name_dst, name_src)])
 
         # Track Player Leaves
         if '_event' in datum.keys() and datum['_event'] == 'NNet.Game.SGameUserLeaveEvent':
@@ -525,6 +1049,8 @@ def get_game_events(data_json_,list_player_name,replay):
             output.append([time_gameloop, '[%02d:%02d] %s turned off %s Power Link' % (
             time_min, time_sec, name_src, powerlink_loc_str)])
 
+
+
     # Track Player Deaths
     list_unit_id = [event.unit.id for event in replay.events if event.name == 'UnitBornEvent']
     list_unit_type_name = [event.unit_type_name for event in replay.events if event.name == 'UnitBornEvent']
@@ -535,143 +1061,75 @@ def get_game_events(data_json_,list_player_name,replay):
     for entity_key in replay.entity.keys():
         list_marines = [unit for unit in replay.entity[entity_key].units if unit.name == u'SCV']
         for marine in list_marines:
-            if marine.died_at is None:
+            marine_sel = marine
+            if marine_sel.died_at is None:
                 continue
 
-            list_ppl_who_atkd_marine = list(set([atk_event[1] for atk_event in list_atk_events if marine.owner.sid == atk_event[2] and
-                                                 (marine.died_at - atk_event[0]) > 0 and (
-                                                 marine.died_at - atk_event[0]) < (16 * 60)]))
-            list_ppl_who_atkd_marine = [person for person in list_ppl_who_atkd_marine if person != marine.owner.sid]
+            if marine_sel.killing_unit is None:
+                deaths = [[unit.died_at - marine_sel.died_at, unit] for unit in
+                          replay.entity[entity_key].units if
+                          (unit.killing_unit is not None) and
+                          abs(marine_sel.died_at - unit.died_at) <= (16 * 5)]
+                if len(deaths) > 0:
+                    idx_min = np.argmin([death[0] for death in deaths])
+                    marine_sel = deaths[idx_min][1]
+
+            marine_sel_killevent = [event for event in replay.events if event.name == 'UnitDiedEvent' and event.unit.id == marine_sel.id]
+            if len(marine_sel_killevent) == 1:
+                death_location = ' (%s)'%get_location(marine_sel_killevent[0].location)
+            else:
+                death_location = ' (Unknown Location)'
+            if len(marine_sel_killevent) == 1 and marine_sel_killevent[0].killing_player_id > 0:
+                id_src = marine_sel_killevent[0].killing_player_id-1
+            elif marine_sel.killing_player is not None:
+                id_src = marine_sel.killing_player.sid
+            elif marine_sel.killing_unit is not None and marine_sel.killing_unit.owner is not None:
+                id_src = marine_sel.killing_unit.owner.sid
+            else:
+                id_src = None
+
+            if id_src is not None and id_src < 12:
+                name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
+            elif id_src == 12:
+                if marine_sel.killing_unit.name is not None:
+                    name_src = replay.entity[13].name + ' (AI) (%s)' % marine_sel.killing_unit.name
+                else:
+                    unit_type_name = substitute_name(get_unit_type_name(marine_sel.killing_unit.id, list_unit_id, list_unit_type_name))
+                    name_src = replay.entity[13].name + ' (AI) (%s)' % unit_type_name
+            elif id_src == 13:
+                if marine_sel.killing_unit.name is not None:
+                    name_src = replay.entity[14].name + ' (AI) (%s)' % marine_sel.killing_unit.name
+                else:
+                    unit_type_name = substitute_name(get_unit_type_name(marine_sel.killing_unit.id, list_unit_id, list_unit_type_name))
+                    name_src = replay.entity[14].name + ' (AI) (%s)' % unit_type_name
+            else:
+                if marine_sel.killing_unit is not None:
+                    unit_type_name = substitute_name(get_unit_type_name(marine_sel.killing_unit.id, list_unit_id, list_unit_type_name))
+                    name_src = 'Misc. Obj. (%s)' % unit_type_name
+                else:
+                    name_src = 'Misc. Obj.'
+
+            id_dst = marine_sel.owner.sid
+            name_dst = list_player_name[id_dst] + ' (#%02d)' % (1 + id_dst)
+            list_ppl_who_atkd_marine = list(set([atk_event[1] for atk_event in list_atk_events if
+                                                 marine_sel.owner.sid == atk_event[2] and
+                                                 (marine_sel.died_at - atk_event[0]) > 0 and
+                                                 (marine_sel.died_at - atk_event[0]) < (16 * 60)]
+                                                ))
+            list_ppl_who_atkd_marine = [person for person in list_ppl_who_atkd_marine if person != id_src and person != id_dst]
             if len(list_ppl_who_atkd_marine) > 0:
                 ppl_who_atkd_marine = ''
                 for person_num in range(len(list_ppl_who_atkd_marine)):
-                    id_src = list_ppl_who_atkd_marine[person_num]
-                    name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
-                    ppl_who_atkd_marine = ppl_who_atkd_marine + ' [%s]' % name_src
+                    id_src2 = list_ppl_who_atkd_marine[person_num]
+                    name_src2 = list_player_name[id_src2] + ' (#%02d)' % (1 + id_src2)
+                    ppl_who_atkd_marine = ppl_who_atkd_marine + ' [%s]' % name_src2
             else:
                 ppl_who_atkd_marine = ''
-            id_dst = marine.owner.sid
-            name_dst = list_player_name[id_dst] + ' (#%02d)' % (1 + id_dst)
-            if marine.killing_unit is None:
-                deaths = [[marine.died_at - unit.died_at, unit.died_at, unit.killing_unit] for unit in
-                          replay.entity[entity_key].units if
-                          (unit.killing_unit is not None) and (unit.killing_unit.owner is not None) and abs(
-                              marine.died_at - unit.died_at) <= (16 * 5)]
 
-                if len(deaths) > 0:
-                    idx_min = np.argmin([death[0] for death in deaths])
-                    time_gameloop = deaths[idx_min][1]
-                    time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
-                    time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
-                    id_src = deaths[idx_min][2].owner.sid
-                    if id_src >= 0 and id_src < 12:
-                        name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
-                        list_ppl_who_atkd_marine = [person for person in list_ppl_who_atkd_marine if
-                                                    person != id_src]
-                        if len(list_ppl_who_atkd_marine) > 0:
-                            ppl_who_atkd_marine = ''
-                            for person_num in range(len(list_ppl_who_atkd_marine)):
-                                id_src2 = list_ppl_who_atkd_marine[person_num]
-                                name_src2 = list_player_name[id_src2] + ' (#%02d)' % (1 + id_src2)
-                                ppl_who_atkd_marine = ppl_who_atkd_marine + ' [%s]' % name_src2
-                        else:
-                            ppl_who_atkd_marine = ''
-                    elif id_src == 12:
-                        if deaths[idx_min][2].name is not None:
-                            name_src = replay.entity[13].name + ' (AI) (%s)' % deaths[idx_min][2].name
-                        else:
-                            # unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if deaths[idx_min][2].id == tmp_unit_id][0]]
-                            unit_type_name = substitute_name(get_unit_type_name(deaths[idx_min][2].id, list_unit_id, list_unit_type_name))
-                            name_src = replay.entity[13].name + ' (AI) (%s)' % unit_type_name
-                            # name_src = replay.entity[13].name + ' (AI) (unitId: %d)' % deaths[idx_min][2].id
-                    elif id_src == 13:
-                        if deaths[idx_min][2].name is not None:
-                            name_src = replay.entity[14].name + ' (AI) (%s)' % deaths[idx_min][2].name
-                        else:
-                            # unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if deaths[idx_min][2].id == tmp_unit_id][0]]
-                            unit_type_name = substitute_name(get_unit_type_name(deaths[idx_min][2].id, list_unit_id, list_unit_type_name))
-                            name_src = replay.entity[14].name + ' (AI) (%s)' % unit_type_name
-                            # name_src = replay.entity[14].name + ' (AI) (unitId: %d)' % deaths[idx_min][2].id
-                    else:
-                        # unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if deaths[idx_min][2].id == tmp_unit_id][0]]
-                        unit_type_name = substitute_name(get_unit_type_name(deaths[idx_min][2].id, list_unit_id, list_unit_type_name))
-                        name_src = 'Misc. Obj. (%s)' % unit_type_name
-                        # name_src = 'Misc. Obj. (unitId: %d)' % deaths[idx_min][2].id
-                    output.append(
-                        [time_gameloop, '[%02d:%02d] %s was killed by %s' % (
-                        time_min, time_sec, name_dst, name_src) + ppl_who_atkd_marine])
-                else:
-                    deaths = [[marine.died_at - unit.died_at, unit.died_at, unit.killing_unit] for unit in
-                              replay.entity[entity_key].units if
-                              (unit.killing_unit is not None) and abs(marine.died_at - unit.died_at) <= (16 * 5)]
-                    if len(deaths) > 0:
-                        idx_min = np.argmin([death[0] for death in deaths])
-                        id_src = deaths[idx_min][2].id
-                        # unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if deaths[idx_min][2].id == tmp_unit_id][0]]
-                        unit_type_name = substitute_name(get_unit_type_name(deaths[idx_min][2].id, list_unit_id, list_unit_type_name))
-                        name_src = ' (%s)' % unit_type_name
-                        # name_src = ' (unitId: %d)'%id_src
-                        list_ppl_who_atkd_marine = [person for person in list_ppl_who_atkd_marine if
-                                                    person != id_src]
-                        if len(list_ppl_who_atkd_marine) > 0:
-                            ppl_who_atkd_marine = ''
-                            for person_num in range(len(list_ppl_who_atkd_marine)):
-                                id_src2 = list_ppl_who_atkd_marine[person_num]
-                                name_src2 = list_player_name[id_src2] + ' (#%02d)' % (1 + id_src2)
-                                ppl_who_atkd_marine = ppl_who_atkd_marine + ' [%s]' % name_src2
-                        else:
-                            ppl_who_atkd_marine = ''
-                    else:
-                        name_src = ''
-                    time_gameloop = marine.died_at
-                    time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
-                    time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
-                    output.append([time_gameloop, '[%02d:%02d] %s was killed by Misc. Obj.%s' % (
-                        time_min, time_sec, name_dst, name_src) + ppl_who_atkd_marine])
-            else:
-                time_gameloop = marine.died_at
-                time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
-                time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
-                if marine.killing_unit.owner is not None:
-                    id_src = marine.killing_unit.owner.sid
-                else:
-                    id_src = -1
-                if id_src >= 0 and id_src < 12:
-                    name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
-                    list_ppl_who_atkd_marine = [person for person in list_ppl_who_atkd_marine if
-                                                person != id_src]
-                    if len(list_ppl_who_atkd_marine) > 0:
-                        ppl_who_atkd_marine = ''
-                        for person_num in range(len(list_ppl_who_atkd_marine)):
-                            id_src2 = list_ppl_who_atkd_marine[person_num]
-                            name_src2 = list_player_name[id_src2] + ' (#%02d)' % (1 + id_src2)
-                            ppl_who_atkd_marine = ppl_who_atkd_marine + ' [%s]' % name_src2
-                    else:
-                        ppl_who_atkd_marine = ''
-                elif id_src == 12:
-                    if marine.killing_unit.name is not None:
-                        name_src = replay.entity[13].name + ' (AI) (%s)' % marine.killing_unit.name
-                    else:
-                        # unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if marine.killing_unit.id == tmp_unit_id][0]]
-                        unit_type_name = substitute_name(get_unit_type_name(marine.killing_unit.id, list_unit_id, list_unit_type_name))
-                        name_src = replay.entity[13].name + ' (AI) (%s)' % unit_type_name
-                        # name_src = replay.entity[13].name + ' (AI) (unitId: %d)' % marine.killing_unit.id
-                elif id_src == 13:
-                    if marine.killing_unit.name is not None:
-                        name_src = replay.entity[14].name + ' (AI) (%s)' % marine.killing_unit.name
-                    else:
-                        # unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if marine.killing_unit.id == tmp_unit_id][0]]
-                        unit_type_name = substitute_name(get_unit_type_name(marine.killing_unit.id, list_unit_id, list_unit_type_name))
-                        name_src = replay.entity[14].name + ' (AI) (%s)' % unit_type_name
-                        # name_src = replay.entity[14].name + ' (AI) (unitId: %d)' % marine.killing_unit.id
-                else:
-                    # unit_type_name = list_unit_type_name[[tmp_id for tmp_id,tmp_unit_id in enumerate(list_unit_id) if marine.killing_unit.id == tmp_unit_id][0]]
-                    unit_type_name = substitute_name(get_unit_type_name(marine.killing_unit.id, list_unit_id, list_unit_type_name))
-                    name_src = 'Misc. Obj. (%s)' % unit_type_name
-                    # name_src = 'Misc. Obj. (unitId: %d)' % marine.killing_unit.id
-                output.append([time_gameloop, '[%02d:%02d] %s was killed by %s' % (
-                time_min, time_sec, name_dst, name_src) + ppl_who_atkd_marine])
-
+            time_gameloop = marine_sel.died_at
+            time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+            time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+            output.append([time_gameloop, '[%02d:%02d] %s was killed by %s' % (time_min, time_sec, name_dst, name_src) + ppl_who_atkd_marine + death_location])
 
     # Track Alien Evolutions
     list_evo = [None]*4
@@ -744,27 +1202,29 @@ def get_game_events(data_json_,list_player_name,replay):
     list_event_aied_born = [event for event in replay.events if
                             event.name == 'UnitBornEvent' and event.unit_type_name == 'NovaAlarmBot']
     for event in list_event_aied_born:
+        loc = ' (%s)'%get_location(event.location)
         time_destroyed = event.frame
         time_min = np.floor(time_destroyed / 1000. * 62.5 / 60).astype('int')
         time_sec = np.floor(time_destroyed / 1000. * 62.5 % 60)
         if event.unit_controller is not None:
             id_src = event.unit_controller.sid
             name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
-            output.append([time_destroyed,'[%02d:%02d] %s used an AIED' % (time_min, time_sec, name_src)])
+            output.append([time_destroyed,'[%02d:%02d] %s used an AIED' % (time_min, time_sec, name_src) + loc])
 
     # Track AIED explosion
     list_event_aied_death = [event for event in replay.events if
                                 event.name == 'UnitDiedEvent' and event.unit.id in [event2.unit.id for event2 in list_event_aied_born]]
     for event in list_event_aied_death:
+        loc = ' (%s)'%get_location(event.location)
         time_destroyed = event.frame
         time_min = np.floor(time_destroyed / 1000. * 62.5 / 60).astype('int')
         time_sec = np.floor(time_destroyed / 1000. * 62.5 % 60)
         if event.unit.owner is not None:
             id_src = event.unit.owner.sid
             name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
-            output.append([time_destroyed,'[%02d:%02d] %s\'s AIED has been detonated/disarmed' % (time_min, time_sec, name_src)])
+            output.append([time_destroyed,'[%02d:%02d] %s\'s AIED has been detonated/disarmed' % (time_min, time_sec, name_src) + loc])
 
-    def get_destruction_by_obj_name(output_,obj_name_disp_,obj_name_file_,disable_spam_):
+    def get_destruction_by_obj_name(output_,obj_name_disp_,obj_name_file_,show_location_,disable_spam_):
         list_unit_tmp_ = [event.unit.id for event in replay.events if event.name == 'UnitBornEvent' and event.unit_type_name == obj_name_file_]
         list_event_death_ = [event for event in replay.events if event.name == 'UnitDiedEvent' and event.unit.id in list_unit_tmp_]
         for event in list_event_death_:
@@ -772,6 +1232,10 @@ def get_game_events(data_json_,list_player_name,replay):
             time_min = np.floor(time_destroyed / 1000. * 62.5 / 60).astype('int')
             time_sec = np.floor(time_destroyed / 1000. * 62.5 % 60)
             killing_unit = event.killing_unit
+            if show_location_:
+                death_location = ' (%s)'%get_location(event.location)
+            else:
+                death_location = ''
             if killing_unit is not None and killing_unit.owner is not None:
                 id_src = killing_unit.owner.sid
                 if id_src == 12:
@@ -780,52 +1244,60 @@ def get_game_events(data_json_,list_player_name,replay):
                     name_src = replay.entity[14].name + ' (AI) (%s)' % substitute_name(get_unit_type_name(killing_unit.id,list_unit_id,list_unit_type_name))
                 else:
                     name_src = list_player_name[id_src] + ' (#%02d) (%s)' % (1+id_src, substitute_name(get_unit_type_name(killing_unit.id,list_unit_id,list_unit_type_name)))
-                output.append([time_destroyed,'[%02d:%02d] %s has been destroyed by %s' % (time_min, time_sec, obj_name_disp_, name_src)])
+                output.append([time_destroyed,'[%02d:%02d] %s has been destroyed by %s' % (time_min, time_sec, obj_name_disp_, name_src) + death_location])
             elif killing_unit is not None:
                 name_src = 'Misc. Obj. (%s)' % substitute_name(get_unit_type_name(killing_unit.id, list_unit_id, list_unit_type_name))
-                output.append([time_destroyed,'[%02d:%02d] %s has been destroyed by %s' % (time_min, time_sec, obj_name_disp_, name_src)])
+                output.append([time_destroyed,'[%02d:%02d] %s has been destroyed by %s' % (time_min, time_sec, obj_name_disp_, name_src) + death_location])
             else:
                 if not disable_spam_:
-                    output.append([time_destroyed,'[%02d:%02d] %s has been destroyed' % (time_min, time_sec, obj_name_disp_)])
+                    output.append([time_destroyed,'[%02d:%02d] %s has been destroyed' % (time_min, time_sec, obj_name_disp_) + death_location])
 
-    def get_attacks_by_obj_name(output_,obj_name_disp_,obj_name_file_):
+    def get_attacks_by_obj_name(output_,obj_name_disp_,obj_name_file_,show_location_):
         list_atks = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent','TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and get_unit_type_name(event.target.id, list_unit_id, list_unit_type_name) == obj_name_file_]
         for event in list_atks:
+            if show_location_:
+                death_location = ' (%s)'%get_location(event.location)
+            else:
+                death_location = ''
             time_gameloop = event.frame
             time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
             time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
             id_src = event.player.sid
             name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
-            output_.append([time_gameloop, '[%02d:%02d] %s has been attacked by %s' % (time_min, time_sec, obj_name_disp_, name_src)])
+            output_.append([time_gameloop, '[%02d:%02d] %s has been attacked by %s' % (time_min, time_sec, obj_name_disp_, name_src) + death_location])
 
-    def get_attacks_by_obj_loc(output_,obj_name_disp_,obj_name_file_):
+    def get_attacks_by_obj_loc(output_,obj_name_disp_,obj_name_file_,show_location_):
         obj_loc_blkcoord = [[float(val) for val in child.attrib['Position'].split(',')[0:2]] for child in
                    list_objects._children if
                    'UnitType' in child.keys() and child.attrib['UnitType'] == obj_name_file_]
         list_atks = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent','TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and any([check_dist(list(event.location[0:2]),loc)<3. for loc in obj_loc_blkcoord])]
         for event in list_atks:
+            if show_location_:
+                death_location = ' (%s)'%get_location(event.location)
+            else:
+                death_location = ''
             time_gameloop = event.frame
             time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
             time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
             id_src = event.player.sid
             name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
-            output_.append([time_gameloop, '[%02d:%02d] %s has been attacked by %s' % (time_min, time_sec, obj_name_disp_, name_src)])
+            output_.append([time_gameloop, '[%02d:%02d] %s has been attacked by %s' % (time_min, time_sec, obj_name_disp_, name_src) + death_location])
 
-    get_destruction_by_obj_name(output,'C.O.R.E.','RoguePurifier',False)
-    get_destruction_by_obj_name(output,'A shuttle','MengskWraith2',True)
-    get_destruction_by_obj_name(output,'A camera','SentryGun2',True)
-    get_destruction_by_obj_name(output,'The blood tester','TechLab2',False)
-    get_destruction_by_obj_name(output,'Moon LZ-1486A','MoonLZ1486A',False)
-    get_destruction_by_obj_name(output,'Station','SJSpaceStationMercenary',False)
-    get_destruction_by_obj_name(output, 'Shuttle engine', 'SpaceshipEngine',False)
+    get_destruction_by_obj_name(output,'C.O.R.E.','RoguePurifier',False,False)
+    get_destruction_by_obj_name(output,'A shuttle','MengskWraith2',True,True)
+    get_destruction_by_obj_name(output,'A camera','SentryGun2',True,True)
+    get_destruction_by_obj_name(output,'The blood tester','TechLab2',False,False)
+    get_destruction_by_obj_name(output,'Moon LZ-1486A','MoonLZ1486A',False,False)
+    get_destruction_by_obj_name(output,'Station','SJSpaceStationMercenary',False,False)
+    get_destruction_by_obj_name(output, 'Shuttle engine', 'SpaceshipEngine',False,False)
 
-    get_attacks_by_obj_name(output, 'Shuttle', 'MengskWraith2')
-    get_attacks_by_obj_name(output, 'Shuttle engine', 'SpaceshipEngine')
-    get_attacks_by_obj_name(output, 'Station', 'SJSpaceStationMercenary')
-
-    get_attacks_by_obj_loc(output, 'Security Module', 'PlatformPowerCore222')
-    get_attacks_by_obj_loc(output, 'Radiator', 'PlatformPowerCore2')
-    get_attacks_by_obj_loc(output, 'Power transformer', 'PlatformPowerCore')
+    get_attacks_by_obj_name(output, 'Shuttle', 'MengskWraith2',False)
+    get_attacks_by_obj_name(output, 'Station', 'SJSpaceStationMercenary',False)
+    
+    get_attacks_by_obj_loc(output, 'Shuttle engine', 'SpaceshipEngine',True)
+    get_attacks_by_obj_loc(output, 'Security Module', 'PlatformPowerCore222',True)
+    get_attacks_by_obj_loc(output, 'Radiator', 'PlatformPowerCore2',True)
+    get_attacks_by_obj_loc(output, 'Power transformer', 'PlatformPowerCore',False)
 
     # Black Hole Appears
     list_bh_enter_events = [event for event in replay.events if event.name == 'UnitBornEvent' and event.unit_type_name == 'SJMineralFormation2222']
