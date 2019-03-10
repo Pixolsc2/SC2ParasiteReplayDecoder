@@ -66,9 +66,16 @@ def filter_abildata(e_):
         e_parsed_.append(atype_)
     return e_parsed_
 
+def most_frequent(List):
+    return max(set(List), key = List.count)
+
 list_names = {}
 list_names['SJMineralFormation2222'] = 'Black Hole'
 list_names['Beacon_TerranSmall2332322264'] = 'Head Crab'
+list_names['Beacon_TerranSmall2332322243'] = 'Explosion'
+list_names['Beacon_TerranSmall23323222432'] = 'Fuel Tank Explosion'
+list_names['Beacon_TerranSmall233232224'] = 'Fire'
+list_names['BreachingCharge'] = 'Thermite'
 list_names['RoguePurifier'] = 'C.O.R.E'
 list_names['MengskWraith2'] = 'Shuttle'
 list_names['TechLab2'] = 'Blood Tester'
@@ -176,11 +183,14 @@ def get_game_events(data_json_,list_player_name,replay):
         # Track radio jammer death
         if '_event' in datum.keys() and datum['_event'] == 'NNet.Replay.Tracker.SUnitDiedEvent':
             if datum['m_unitTagIndex'] in radiojammer_id_tracker:
-                id_src = datum['m_killerPlayerId'] - 1
-                if id_src >= 12:
-                    name_src = 'Alien A.I.'
+                if datum['m_killerPlayerId'] is not None:
+                    id_src = datum['m_killerPlayerId'] - 1
+                    if id_src >= 12:
+                        name_src = 'Alien A.I.'
+                    else:
+                        name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
                 else:
-                    name_src = list_player_name[id_src] + ' (#%02d)' % (1+id_src)
+                    name_src = 'Misc. Obj.'
                 idx = np.where([datum['m_unitTagIndex'] == tracker_enum for tracker_enum in radiojammer_id_tracker])[0][
                     0]
                 id_dst = radiojammer_owner_tracker[idx]
@@ -807,6 +817,7 @@ def get_game_events(data_json_,list_player_name,replay):
     get_destruction_by_obj_name(output,'The blood tester','TechLab2',False)
     get_destruction_by_obj_name(output,'Moon LZ-1486A','MoonLZ1486A',False)
     get_destruction_by_obj_name(output,'Station','SJSpaceStationMercenary',False)
+    get_destruction_by_obj_name(output, 'Shuttle engine', 'SpaceshipEngine',False)
 
     get_attacks_by_obj_name(output, 'Shuttle', 'MengskWraith2')
     get_attacks_by_obj_name(output, 'Shuttle engine', 'SpaceshipEngine')
@@ -931,6 +942,15 @@ def get_game_events(data_json_,list_player_name,replay):
             output.append([spinalarm_death_tracker[ii][0], '[%02d:%02d] Self Destruct Switch Disabled (B)' % (spinalarm_death_tracker[ii][1], spinalarm_death_tracker[ii][2])])
 
 
+    # Blood-Test Sabotage
+    list_event_btsabotage = [event for event in replay.events if event.name == 'UpgradeCompleteEvent' and event.upgrade_type_name == 'BloodTesterSabotageExplode' if event.player != None]
+    if len(list_event_btsabotage) > 0:
+        time_gameloop = list_event_btsabotage[0].frame
+        time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+        time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+        id_src = most_frequent([event.player.sid for event in list_event_btsabotage])
+        name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
+        output.append([time_gameloop, '[%02d:%02d] The blood tester has been sabotaged by %s' % (time_min, time_sec, name_src)])
 
 
     output = [output[idx][1] for idx in np.argsort(np.array([out[0] for out in output]))]
@@ -956,12 +976,15 @@ def main():
     except:
         print('No replay file.')
         return
-    file_json = r'tmp.ndjson'
-    str_cmd_json = r'python ".\s2protocol-master\s2protocol\s2_cli.py" --all --ndjson "' + file_sc2replay + '" > "' + file_json + '"'
-    subprocess.check_call(str_cmd_json, shell=True)
-    with open(file_json) as f:
-        data_json = [json.loads(line) for line in f]
 
+    # file_json = r'tmp.ndjson'
+    # str_cmd_json = r'python ".\s2protocol-master\s2protocol\s2_cli.py" --all --ndjson "' + file_sc2replay + '" > "' + file_json + '"'
+    # subprocess.check_call(str_cmd_json, shell=True)
+    # with open(file_json) as f:
+    #     data_json = [json.loads(line) for line in f]
+
+    str_cmd_json = r'python ".\s2protocol-master\s2protocol\s2_cli.py" --all --ndjson "' + file_sc2replay
+    data_json = [json.loads(line) for line in subprocess.check_output(str_cmd_json).split('\n')[:-1]]
 
     num_players = 12
 
