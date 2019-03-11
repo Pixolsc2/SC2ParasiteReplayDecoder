@@ -102,6 +102,7 @@ list_names['LargeSwarmQueen'] = 'Queen T4'
 list_names['PrimalHydralisk'] = 'Ice Hydra T4'
 list_names['HotSTorrasque2'] = 'Ultralisk T4'
 list_names['MutaliskBroodlord'] = 'Venom Bat T4'
+list_names['MutaliskViper'] = 'Vampire Bat T4'
 list_names['DehakaMirrorImage'] = 'Veloci Dehaka T4'
 list_names['HybridDominator'] = 'Subvoltaic T4'
 list_names['XenomorphMatriarch'] = 'Matriarch Queen T5'
@@ -1086,7 +1087,7 @@ def get_game_events(data_json_,list_player_name,replay):
     list_valid_units = ['Marine', 'SCV', 'MercMedic', 'HelsAngelAssault', 'ZerglingCarbot', 'PrisonZealot',
                         'HunterKiller', 'PrimalRoach', 'Mutalisk', 'HotSSwarmling', 'Zeratul', 'WhizzardAlien',
                         'Archon', 'Ravager', 'LargeSwarmQueen', 'PrimalHydralisk', 'HotSTorrasque2',
-                        'MutaliskBroodlord', 'DehakaMirrorImage', 'HybridDominator', 'XenomorphMatriarch', 'Yagdra',
+                        'MutaliskBroodlord', 'MutaliskViper', 'DehakaMirrorImage', 'HybridDominator', 'XenomorphMatriarch', 'Yagdra',
                         'AlphaXenodon', 'Broodlord', 'Dehaka']
     list_atk_events = [[x.frame, x.player.sid, x.ability_type_data['upkeep_player_id'] - 1] for x in
                        [replay.events[idx] for idx in
@@ -1201,6 +1202,7 @@ def get_game_events(data_json_,list_player_name,replay):
                    ['PrimalHydralisk','Ice Hydra (T4)'],
                    ['HotSTorrasque2','Ultralisk (T4)'],
                    ['MutaliskBroodlord', 'Venom Bat (T4)'],
+                   ['MutaliskViper', 'Vampire Bat (T4)'],
                    ['DehakaMirrorImage', 'Veloci Dehaka (T4)'],
                    ['HybridDominator','Subvoltaic (T4)'],
                    ]
