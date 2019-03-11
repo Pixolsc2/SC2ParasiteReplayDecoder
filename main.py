@@ -237,8 +237,8 @@ list_regions = [
             [215.4373,  102.5388],
             [215.3423,   93.1286],
             [221.2355,   86.8551],
-            [210.7798,   80.5817],
-            [209.9243,   74.5934],
+            [208.7798,   80.5817],
+            [208.9243,   74.5934],
             [204.1261,   70.0309],
             [204.3162,   65.6585],
             [208.6886,   64.1376],
@@ -1181,6 +1181,8 @@ def get_game_events(data_json_,list_player_name,replay):
 
             # print out details
             output.append([time_gameloop, '[%02d:%02d] %s was killed by %s' % (time_min, time_sec, name_dst, name_src) + ppl_who_atkd_marine + death_location])
+            print('[%02d:%02d] %s was killed by %s' % (time_min, time_sec, name_dst, name_src) + ppl_who_atkd_marine + death_location)
+            print(marine_sel_killevent[0].location)
 
     # Track Alien Evolutions
     list_evo = [None]*4
