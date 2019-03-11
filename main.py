@@ -1181,8 +1181,6 @@ def get_game_events(data_json_,list_player_name,replay):
 
             # print out details
             output.append([time_gameloop, '[%02d:%02d] %s was killed by %s' % (time_min, time_sec, name_dst, name_src) + ppl_who_atkd_marine + death_location])
-            print('[%02d:%02d] %s was killed by %s' % (time_min, time_sec, name_dst, name_src) + ppl_who_atkd_marine + death_location)
-            print(marine_sel_killevent[0].location)
 
     # Track Alien Evolutions
     list_evo = [None]*4
