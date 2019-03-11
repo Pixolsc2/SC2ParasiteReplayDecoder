@@ -84,6 +84,34 @@ list_names['SJSpaceStationMercenary'] = 'Station'
 list_names['WidowMineBurrowed2'] = 'Remote Mine'
 list_names['NovaAlarmBot'] = 'AIED'
 list_names['HelsAngelAssault'] = 'T-800 Eliminator'
+list_names['PrimalTownHallUprooted'] = 'Hydradon'
+
+# Alien Forms
+list_names['InfestedTerran2'] = 'Infested Terran T1'
+list_names['ZerglingCarbot'] = 'Zergling T2'
+list_names['PrisonZealot'] = 'Psychic T2'
+list_names['HunterKiller'] = 'Hydra T3'
+list_names['PrimalRoach'] = 'Roach T3'
+list_names['Mutalisk'] = 'Bat T3'
+list_names['HotSSwarmling'] = 'Veloci Zergling T3'
+list_names['Zeratul'] = 'Cosmic Assassin T3'
+list_names['WhizzardAlien'] = 'Whizzard T3)'
+list_names['Archon'] = 'Voltaic T3'
+list_names['Ravager'] = 'Roach T4'
+list_names['LargeSwarmQueen'] = 'Queen T4'
+list_names['PrimalHydralisk'] = 'Ice Hydra T4'
+list_names['HotSTorrasque2'] = 'Ultralisk T4'
+list_names['MutaliskBroodlord'] = 'Venom Bat T4'
+list_names['DehakaMirrorImage'] = 'Veloci Dehaka T4'
+list_names['HybridDominator'] = 'Subvoltaic T4'
+list_names['XenomorphMatriarch'] = 'Matriarch Queen T5'
+list_names['Yagdra'] = 'Flame Gargantuan T5'
+list_names['AlphaXenodon'] = 'Ultralisk T5'
+list_names['Broodlord'] = 'Flying Crab T5'
+list_names['Dehaka'] = 'Veloci Dehaka T5'
+
+
+
 
 def substitute_name(original_name_):
     if original_name_ in list_names.keys():
@@ -91,12 +119,7 @@ def substitute_name(original_name_):
     else:
         return original_name_
 
-def get_unit_type_name(unit_id_,list_unit_id_,list_unit_type_name_):
-    try:
-        unit_type_name_ = list_unit_type_name_[[ii for ii,unit_id_tmp in enumerate(list_unit_id_) if unit_id_ == unit_id_tmp][0]]
-    except:
-        unit_type_name_ = 'N/A'
-    return unit_type_name_
+
 
 
 def get_location(location_):
@@ -647,9 +670,9 @@ def get_game_events(data_json_,list_player_name,replay):
     debri_fire_tracker = []
     tank_tracker = []
     tank_loc_ptcoord = [[926406., 201907.], [829717., 960161.], [814268., 689009.], [940391., 321852.],
-                        [880390., 490999.], [944118., 837361.]]  # y,x
+                        [880390., 490999.], [944118., 837361.],[896589.,543669.]]  # y,x
     tank_loc_blkcoord = [[221.3, 48.4], [204.0, 232.3], [196.6, 169.9], [232.4, 77.0], [214.9, 115.7],
-                         [231.2, 203.5]]  # y,x
+                         [231.2, 203.5],[218.9,132.7]]  # y,x
 
     station_life_modules_mtags = [86769665, 86245377, 85721089, 85458945, 85983233, 86507521]
     bunker_life_modules_mtags = [308543489, 267911169]
@@ -676,9 +699,17 @@ def get_game_events(data_json_,list_player_name,replay):
     except:
         list_bridge_target_id = []
 
-
     def check_dist(yx1, yx2):
         return np.sqrt(np.square(yx1[0] - yx2[0]) + np.square(yx1[1] - yx2[1]))
+
+    list_unit_id = [event.unit.id for event in replay.events if event.name == 'UnitBornEvent']
+    list_unit_type_name = [event.unit_type_name for event in replay.events if event.name == 'UnitBornEvent']
+    def get_unit_type_name(unit_id_):
+        try:
+            unit_type_name_ = list_unit_type_name[[ii for ii, unit_id_tmp in enumerate(list_unit_id) if unit_id_ == unit_id_tmp][0]]
+        except:
+            unit_type_name_ = 'N/A'
+        return unit_type_name_
 
     for datum in data_json_:
         if '_event' in datum.keys() and datum['_event'] == 'NNet.Replay.Tracker.SUnitBornEvent' and datum[
@@ -1052,8 +1083,11 @@ def get_game_events(data_json_,list_player_name,replay):
 
 
     # Track Player Deaths
-    list_unit_id = [event.unit.id for event in replay.events if event.name == 'UnitBornEvent']
-    list_unit_type_name = [event.unit_type_name for event in replay.events if event.name == 'UnitBornEvent']
+    list_valid_units = ['Marine', 'SCV', 'MercMedic', 'HelsAngelAssault', 'ZerglingCarbot', 'PrisonZealot',
+                        'HunterKiller', 'PrimalRoach', 'Mutalisk', 'HotSSwarmling', 'Zeratul', 'WhizzardAlien',
+                        'Archon', 'Ravager', 'LargeSwarmQueen', 'PrimalHydralisk', 'HotSTorrasque2',
+                        'MutaliskBroodlord', 'DehakaMirrorImage', 'HybridDominator', 'XenomorphMatriarch', 'Yagdra',
+                        'AlphaXenodon', 'Broodlord', 'Dehaka']
     list_atk_events = [[x.frame, x.player.sid, x.ability_type_data['upkeep_player_id'] - 1] for x in
                        [replay.events[idx] for idx in
                         np.where([event.name == 'TargetUnitCommandEvent' for event in replay.events])[0]] if
@@ -1061,11 +1095,16 @@ def get_game_events(data_json_,list_player_name,replay):
     for entity_key in replay.entity.keys():
         list_marines = [unit for unit in replay.entity[entity_key].units if unit.name == u'SCV']
         for marine in list_marines:
+            # Selected unit
             marine_sel = marine
+
+            # Skip if selected unit never died
             if marine_sel.died_at is None:
                 continue
 
+            # Attempt to find a different unit if the selected unit has no killer
             if marine_sel.killing_unit is None:
+                # Check for a unit with a killer
                 deaths = [[unit.died_at - marine_sel.died_at, unit] for unit in
                           replay.entity[entity_key].units if
                           (unit.killing_unit is not None) and
@@ -1073,12 +1112,22 @@ def get_game_events(data_json_,list_player_name,replay):
                 if len(deaths) > 0:
                     idx_min = np.argmin([death[0] for death in deaths])
                     marine_sel = deaths[idx_min][1]
+                else: # Check for a unit that has a valid death location if there is no killer found above
+                    list_entity_unitids = [unit.id for unit in replay.entity[entity_key].units]
+                    list_marine_sel = [event.unit for event in replay.events if event.name == 'UnitDiedEvent' and event.unit.id in list_entity_unitids and abs(marine_sel.died_at - event.frame) <= (16 * 5) and get_location(event.location) != 'Unknown Location' and get_unit_type_name(event.unit_id) in list_valid_units]
+                    if len(list_marine_sel) > 0:
+                        marine_sel = list_marine_sel[0]
 
+            # Get the death event for the selected unit
             marine_sel_killevent = [event for event in replay.events if event.name == 'UnitDiedEvent' and event.unit.id == marine_sel.id]
+
+            # Get the death location
             if len(marine_sel_killevent) == 1:
                 death_location = ' (%s)'%get_location(marine_sel_killevent[0].location)
             else:
                 death_location = ' (Unknown Location)'
+
+            # Get the killing player
             if len(marine_sel_killevent) == 1 and marine_sel_killevent[0].killing_player_id > 0:
                 id_src = marine_sel_killevent[0].killing_player_id-1
             elif marine_sel.killing_player is not None:
@@ -1088,29 +1137,27 @@ def get_game_events(data_json_,list_player_name,replay):
             else:
                 id_src = None
 
-            if id_src is not None and id_src < 12:
-                name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
-            elif id_src == 12:
-                if marine_sel.killing_unit.name is not None:
-                    name_src = replay.entity[13].name + ' (AI) (%s)' % marine_sel.killing_unit.name
-                else:
-                    unit_type_name = substitute_name(get_unit_type_name(marine_sel.killing_unit.id, list_unit_id, list_unit_type_name))
-                    name_src = replay.entity[13].name + ' (AI) (%s)' % unit_type_name
-            elif id_src == 13:
-                if marine_sel.killing_unit.name is not None:
-                    name_src = replay.entity[14].name + ' (AI) (%s)' % marine_sel.killing_unit.name
-                else:
-                    unit_type_name = substitute_name(get_unit_type_name(marine_sel.killing_unit.id, list_unit_id, list_unit_type_name))
-                    name_src = replay.entity[14].name + ' (AI) (%s)' % unit_type_name
+            # Get the killing unit
+            if marine_sel.killing_unit is None:
+                killing_unit = ''
+            elif marine_sel.killing_unit.name is None:
+                killing_unit = ' (%s)' % substitute_name(get_unit_type_name(marine_sel.killing_unit.id))
             else:
-                if marine_sel.killing_unit is not None:
-                    unit_type_name = substitute_name(get_unit_type_name(marine_sel.killing_unit.id, list_unit_id, list_unit_type_name))
-                    name_src = 'Misc. Obj. (%s)' % unit_type_name
-                else:
-                    name_src = 'Misc. Obj.'
+                killing_unit = ' (%s)' % marine_sel.killing_unit.name
 
+            # Format death details
+            if id_src is not None and id_src < 12: # Killer is a player
+                name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src) + killing_unit
+            elif id_src == 12 or id_src == 13: # Killer is an AI
+                name_src = replay.entity[id_src+1].name + ' (AI)' + killing_unit
+            else: # Killer is unknown (gas, oxy, explosion, etc...)
+                name_src = 'Misc. Obj.' + killing_unit
+
+            # Owner of selected unit that died
             id_dst = marine_sel.owner.sid
             name_dst = list_player_name[id_dst] + ' (#%02d)' % (1 + id_dst)
+
+            # Get list of ppl who targeted the selected unit
             list_ppl_who_atkd_marine = list(set([atk_event[1] for atk_event in list_atk_events if
                                                  marine_sel.owner.sid == atk_event[2] and
                                                  (marine_sel.died_at - atk_event[0]) > 0 and
@@ -1126,9 +1173,12 @@ def get_game_events(data_json_,list_player_name,replay):
             else:
                 ppl_who_atkd_marine = ''
 
+            # get time of death
             time_gameloop = marine_sel.died_at
             time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
             time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+
+            # print out details
             output.append([time_gameloop, '[%02d:%02d] %s was killed by %s' % (time_min, time_sec, name_dst, name_src) + ppl_who_atkd_marine + death_location])
 
     # Track Alien Evolutions
@@ -1239,21 +1289,21 @@ def get_game_events(data_json_,list_player_name,replay):
             if killing_unit is not None and killing_unit.owner is not None:
                 id_src = killing_unit.owner.sid
                 if id_src == 12:
-                    name_src = replay.entity[13].name + ' (AI) (%s)' % substitute_name(get_unit_type_name(killing_unit.id,list_unit_id,list_unit_type_name))
+                    name_src = replay.entity[13].name + ' (AI) (%s)' % substitute_name(get_unit_type_name(killing_unit.id))
                 elif id_src == 13:
-                    name_src = replay.entity[14].name + ' (AI) (%s)' % substitute_name(get_unit_type_name(killing_unit.id,list_unit_id,list_unit_type_name))
+                    name_src = replay.entity[14].name + ' (AI) (%s)' % substitute_name(get_unit_type_name(killing_unit.id))
                 else:
-                    name_src = list_player_name[id_src] + ' (#%02d) (%s)' % (1+id_src, substitute_name(get_unit_type_name(killing_unit.id,list_unit_id,list_unit_type_name)))
+                    name_src = list_player_name[id_src] + ' (#%02d) (%s)' % (1+id_src, substitute_name(get_unit_type_name(killing_unit.id)))
                 output.append([time_destroyed,'[%02d:%02d] %s has been destroyed by %s' % (time_min, time_sec, obj_name_disp_, name_src) + death_location])
             elif killing_unit is not None:
-                name_src = 'Misc. Obj. (%s)' % substitute_name(get_unit_type_name(killing_unit.id, list_unit_id, list_unit_type_name))
+                name_src = 'Misc. Obj. (%s)' % substitute_name(get_unit_type_name(killing_unit.id))
                 output.append([time_destroyed,'[%02d:%02d] %s has been destroyed by %s' % (time_min, time_sec, obj_name_disp_, name_src) + death_location])
             else:
                 if not disable_spam_:
                     output.append([time_destroyed,'[%02d:%02d] %s has been destroyed' % (time_min, time_sec, obj_name_disp_) + death_location])
 
     def get_attacks_by_obj_name(output_,obj_name_disp_,obj_name_file_,show_location_):
-        list_atks = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent','TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and get_unit_type_name(event.target.id, list_unit_id, list_unit_type_name) == obj_name_file_]
+        list_atks = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent','TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and get_unit_type_name(event.target.id) == obj_name_file_]
         for event in list_atks:
             if show_location_:
                 death_location = ' (%s)'%get_location(event.location)
