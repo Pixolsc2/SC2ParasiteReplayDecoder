@@ -85,6 +85,8 @@ list_names['WidowMineBurrowed2'] = 'Remote Mine'
 list_names['NovaAlarmBot'] = 'AIED'
 list_names['HelsAngelAssault'] = 'T-800 Eliminator'
 list_names['PrimalTownHallUprooted'] = 'Hydradon'
+list_names['SpiderMine2'] = 'Mine'
+
 
 # Alien Forms
 list_names['InfestedTerran2'] = 'Infested Terran T1'
@@ -651,7 +653,65 @@ for region_num in range(len(list_regions)):
 
 
 
+def print_activity(replay):
+    list_activity_tags = ['BasicCommandEvent', 'CameraEvent', 'ChatEvent', 'DataCommandEvent', 'SelectionEvent',
+                          'SetControlGroupEvent', 'TargetPointCommandEvent', 'TargetUnitCommandEvent',
+                          'UpdateTargetPointCommandEvent', 'UpdateTargetUnitCommandEvent']
+    gamelength = replay.frames / 16.
+    if gamelength % 60 >= 10:
+        gamelength = int(np.ceil(gamelength / 60))
+    else:
+        gamelength = int(np.floor(gamelength / 60))
+    list_player_activity = [[]] * 12
+    for player_num in range(12):
+        event_leave = [event.second / 60 for event in replay.events if
+                       event.name == 'PlayerLeaveEvent' and event.player.sid == player_num]
+        if len(event_leave) > 0:
+            time_leave = event_leave[0]
+        else:
+            time_leave = np.inf
 
+        if player_num+1 in replay.entity.keys() and replay.entity[player_num+1].sid == player_num:
+            event_death = [unit.died_at for unit in replay.entity[player_num+1].units if unit.name in ['SCV']]
+            if len([event for event in event_death if event == None]) == 0 and len(event_death) > 0:
+                time_death = int(max([event for event in event_death])/16./60)
+            else:
+                time_death = np.inf
+        else:
+            time_death = -1
+
+        list_player_activity[player_num] = ['   '] * gamelength
+        list_events = [event.second / 60 for event in replay.events if event.name in list_activity_tags and event.player.sid == player_num]
+        for minute_num in range(gamelength):
+            if minute_num > time_leave or minute_num > time_death or time_death == -1:
+                list_player_activity[player_num][minute_num] = '   '
+            else:
+                num_events = len([event for event in list_events if event == minute_num])
+                if num_events == 0:
+                    list_player_activity[player_num][minute_num] = '---'
+                else:
+                    list_player_activity[player_num][minute_num] = '%3d' % min(999, num_events)
+
+    print('Events Per Minute By Player ("---" Indicates AFK or 0)')
+    print('[hh:mm] | [#01] [#02] [#03] [#04] [#05] [#06] [#07] [#08] [#09] [#10] [#11] [#12]')
+    print('---------------------------------------------------------------------------------')
+    for minute_num in range(gamelength):
+        print('[%02d:%02d] | [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s]' % (
+            minute_num / 60,
+            minute_num % 60,
+            list_player_activity[0][minute_num],
+            list_player_activity[1][minute_num],
+            list_player_activity[2][minute_num],
+            list_player_activity[3][minute_num],
+            list_player_activity[4][minute_num],
+            list_player_activity[5][minute_num],
+            list_player_activity[6][minute_num],
+            list_player_activity[7][minute_num],
+            list_player_activity[8][minute_num],
+            list_player_activity[9][minute_num],
+            list_player_activity[10][minute_num],
+            list_player_activity[11][minute_num],
+        ))
 
 
 
@@ -1091,7 +1151,7 @@ def get_game_events(data_json_,list_player_name,replay):
                         'AlphaXenodon', 'Broodlord', 'Dehaka']
     list_atk_events = [[x.frame, x.player.sid, x.ability_type_data['upkeep_player_id'] - 1] for x in
                        [replay.events[idx] for idx in
-                        np.where([event.name == 'TargetUnitCommandEvent' for event in replay.events])[0]] if
+                        np.where([event.name == 'UpdateTargetUnitCommandEvent' or event.name == 'TargetUnitCommandEvent' for event in replay.events])[0]] if
                        x.ability_type_data['upkeep_player_id'] > 0 and x.ability_type_data['upkeep_player_id'] <= 12]
     for entity_key in replay.entity.keys():
         list_marines = [unit for unit in replay.entity[entity_key].units if unit.name == u'SCV']
@@ -1466,7 +1526,7 @@ def get_game_events(data_json_,list_player_name,replay):
             output.append([spinalarm_death_tracker[ii][0], '[%02d:%02d] Self Destruct Switch Disabled (B)' % (spinalarm_death_tracker[ii][1], spinalarm_death_tracker[ii][2])])
 
 
-    # Blood-Test Sabotage
+    # Blood-Test Sabotage Explode
     list_event_btsabotage = [event for event in replay.events if event.name == 'UpgradeCompleteEvent' and event.upgrade_type_name == 'BloodTesterSabotageExplode' if event.player != None]
     if len(list_event_btsabotage) > 0:
         time_gameloop = list_event_btsabotage[0].frame
@@ -1474,7 +1534,17 @@ def get_game_events(data_json_,list_player_name,replay):
         time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
         id_src = most_frequent([event.player.sid for event in list_event_btsabotage])
         name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
-        output.append([time_gameloop, '[%02d:%02d] The blood tester has been sabotaged by %s' % (time_min, time_sec, name_src)])
+        output.append([time_gameloop, '[%02d:%02d] The blood tester has been sabotaged to explode by %s' % (time_min, time_sec, name_src)])
+
+    # Blood-Test Sabotage False Positive
+    list_event_btsabotage = [event for event in replay.events if event.name == 'UpgradeCompleteEvent' and event.upgrade_type_name == 'BloodTesterSabotageFalsePositives' if event.player != None]
+    if len(list_event_btsabotage) > 0:
+        time_gameloop = list_event_btsabotage[0].frame
+        time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+        time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+        id_src = most_frequent([event.player.sid for event in list_event_btsabotage])
+        name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
+        output.append([time_gameloop, '[%02d:%02d] The blood tester has been sabotaged to give false positives by %s' % (time_min, time_sec, name_src)])
 
 
     output = [output[idx][1] for idx in np.argsort(np.array([out[0] for out in output]))]
@@ -1576,6 +1646,9 @@ def main():
         if ii>0 and ii%3 == 0:
             print('')
         print(output[ii].encode('utf-8'))
+
+    print('\n\n\n')
+    print_activity(replay)
 
 if __name__ == '__main__':
     main()
