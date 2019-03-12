@@ -653,26 +653,26 @@ for region_num in range(len(list_regions)):
 
 
 
-def print_activity(replay):
+def print_activity(replay_,list_player_name_,list_player_role_):
     list_activity_tags = ['BasicCommandEvent', 'CameraEvent', 'ChatEvent', 'DataCommandEvent', 'SelectionEvent',
                           'SetControlGroupEvent', 'TargetPointCommandEvent', 'TargetUnitCommandEvent',
                           'UpdateTargetPointCommandEvent', 'UpdateTargetUnitCommandEvent']
-    gamelength = replay.frames / 16.
+    gamelength = replay_.frames / 16.
     if gamelength % 60 >= 10:
         gamelength = int(np.ceil(gamelength / 60))
     else:
         gamelength = int(np.floor(gamelength / 60))
     list_player_activity = [[]] * 12
     for player_num in range(12):
-        event_leave = [event.second / 60 for event in replay.events if
+        event_leave = [event.second / 60 for event in replay_.events if
                        event.name == 'PlayerLeaveEvent' and event.player.sid == player_num]
         if len(event_leave) > 0:
             time_leave = event_leave[0]
         else:
             time_leave = np.inf
 
-        if player_num+1 in replay.entity.keys() and replay.entity[player_num+1].sid == player_num:
-            event_death = [unit.died_at for unit in replay.entity[player_num+1].units if unit.name in ['SCV']]
+        if player_num+1 in replay_.entity.keys() and replay_.entity[player_num+1].sid == player_num:
+            event_death = [unit.died_at for unit in replay_.entity[player_num+1].units if unit.name in ['SCV']]
             if len([event for event in event_death if event == None]) == 0 and len(event_death) > 0:
                 time_death = int(max([event for event in event_death])/16./60)
             else:
@@ -681,7 +681,7 @@ def print_activity(replay):
             time_death = -1
 
         list_player_activity[player_num] = ['   '] * gamelength
-        list_events = [event.second / 60 for event in replay.events if event.name in list_activity_tags and event.player.sid == player_num]
+        list_events = [event.second / 60 for event in replay_.events if event.name in list_activity_tags and event.player.sid == player_num]
         for minute_num in range(gamelength):
             if minute_num > time_leave or minute_num > time_death or time_death == -1:
                 list_player_activity[player_num][minute_num] = '   '
@@ -693,10 +693,38 @@ def print_activity(replay):
                     list_player_activity[player_num][minute_num] = '%3d' % min(999, num_events)
 
     print('Events Per Minute By Player ("---" Indicates AFK or 0)')
-    print('[hh:mm] | [#01] [#02] [#03] [#04] [#05] [#06] [#07] [#08] [#09] [#10] [#11] [#12]')
+    print('        | [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s]'%(
+        ('%5s'%(list_player_name_[0][:5])).encode('utf-8'),
+        ('%5s'%(list_player_name_[1][:5])).encode('utf-8'),
+        ('%5s'%(list_player_name_[2][:5])).encode('utf-8'),
+        ('%5s'%(list_player_name_[3][:5])).encode('utf-8'),
+        ('%5s'%(list_player_name_[4][:5])).encode('utf-8'),
+        ('%5s'%(list_player_name_[5][:5])).encode('utf-8'),
+        ('%5s'%(list_player_name_[6][:5])).encode('utf-8'),
+        ('%5s'%(list_player_name_[7][:5])).encode('utf-8'),
+        ('%5s'%(list_player_name_[8][:5])).encode('utf-8'),
+        ('%5s'%(list_player_name_[9][:5])).encode('utf-8'),
+        ('%5s'%(list_player_name_[10][:5])).encode('utf-8'),
+        ('%5s'%(list_player_name_[11][:5])).encode('utf-8'),
+        ))
+    print('        | [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s]'%(
+        ' %3s '%(list_player_role_[0][:3]),
+        ' %3s '%(list_player_role_[1][:3]),
+        ' %3s '%(list_player_role_[2][:3]),
+        ' %3s '%(list_player_role_[3][:3]),
+        ' %3s '%(list_player_role_[4][:3]),
+        ' %3s '%(list_player_role_[5][:3]),
+        ' %3s '%(list_player_role_[6][:3]),
+        ' %3s '%(list_player_role_[7][:3]),
+        ' %3s '%(list_player_role_[8][:3]),
+        ' %3s '%(list_player_role_[9][:3]),
+        ' %3s '%(list_player_role_[10][:3]),
+        ' %3s '%(list_player_role_[11][:3]),
+        ))
+    print('[hh:mm] | [ #01 ] [ #02 ] [ #03 ] [ #04 ] [ #05 ] [ #06 ] [ #07 ] [ #08 ] [ #09 ] [ #10 ] [ #11 ] [ #12 ]')
     print('---------------------------------------------------------------------------------')
     for minute_num in range(gamelength):
-        print('[%02d:%02d] | [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s]' % (
+        print('[%02d:%02d] | [ %s ] [ %s ] [ %s ] [ %s ] [ %s ] [ %s ] [ %s ] [ %s ] [ %s ] [ %s ] [ %s ] [ %s ]' % (
             minute_num / 60,
             minute_num % 60,
             list_player_activity[0][minute_num],
@@ -1648,7 +1676,7 @@ def main():
         print(output[ii].encode('utf-8'))
 
     print('\n\n\n')
-    print_activity(replay)
+    print_activity(replay,list_player_name,list_player_role)
 
 if __name__ == '__main__':
     main()
