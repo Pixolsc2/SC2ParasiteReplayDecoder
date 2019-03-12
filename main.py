@@ -693,7 +693,7 @@ def print_activity(replay_,list_player_name_,list_player_role_):
                     list_player_activity[player_num][minute_num] = '%3d' % min(999, num_events)
 
     print('Events Per Minute By Player ("---" Indicates AFK or 0)')
-    print('        | [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s]'%(
+    print('        |  %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s '%(
         ('%5s'%(list_player_name_[0][:5])).encode('utf-8'),
         ('%5s'%(list_player_name_[1][:5])).encode('utf-8'),
         ('%5s'%(list_player_name_[2][:5])).encode('utf-8'),
@@ -707,7 +707,7 @@ def print_activity(replay_,list_player_name_,list_player_role_):
         ('%5s'%(list_player_name_[10][:5])).encode('utf-8'),
         ('%5s'%(list_player_name_[11][:5])).encode('utf-8'),
         ))
-    print('        | [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s] [%s]'%(
+    print('        |  %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s '%(
         ' %3s '%(list_player_role_[0][:3]),
         ' %3s '%(list_player_role_[1][:3]),
         ' %3s '%(list_player_role_[2][:3]),
@@ -721,10 +721,10 @@ def print_activity(replay_,list_player_name_,list_player_role_):
         ' %3s '%(list_player_role_[10][:3]),
         ' %3s '%(list_player_role_[11][:3]),
         ))
-    print('[hh:mm] | [ #01 ] [ #02 ] [ #03 ] [ #04 ] [ #05 ] [ #06 ] [ #07 ] [ #08 ] [ #09 ] [ #10 ] [ #11 ] [ #12 ]')
-    print('---------------------------------------------------------------------------------')
+    print('[hh:mm] |   #01  |  #02  |  #03  |  #04  |  #05  |  #06  |  #07  |  #08  |  #09  |  #10  |  #11  |  #12  ')
+    print('---------------------------------------------------------------------------------------------------------')
     for minute_num in range(gamelength):
-        print('[%02d:%02d] | [ %s ] [ %s ] [ %s ] [ %s ] [ %s ] [ %s ] [ %s ] [ %s ] [ %s ] [ %s ] [ %s ] [ %s ]' % (
+        print('[%02d:%02d] |   %s  |  %s  |  %s  |  %s  |  %s  |  %s  |  %s  |  %s  |  %s  |  %s  |  %s  |  %s  ' % (
             minute_num / 60,
             minute_num % 60,
             list_player_activity[0][minute_num],
