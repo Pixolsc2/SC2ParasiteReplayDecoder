@@ -133,6 +133,126 @@ def get_location(location_):
     return 'Unknown Location'
 
 list_regions = [
+    ['Drop Pod #1',
+        [
+            [0, 104],
+            [6, 104],
+            [6, 110],
+            [0, 110],
+        ]
+    ],
+    ['Drop Pod #2',
+        [
+            [0, 110],
+            [6, 110],
+            [6, 116],
+            [0, 116],
+        ]
+    ],
+    ['Drop Pod #3',
+        [
+            [12, 94],
+            [18, 94],
+            [18, 100],
+            [12, 100],
+        ]
+    ],
+    ['Drop Pod #4',
+        [
+            [0, 78],
+            [6, 78],
+            [6, 84],
+            [0, 84],
+        ]
+    ],
+    ['Drop Pod #5',
+        [
+            [0, 98],
+            [6, 98],
+            [6, 104],
+            [0, 104],
+        ]
+    ],
+    ['Drop Pod #6',
+        [
+            [0, 128],
+            [6, 128],
+            [6, 134],
+            [0, 134],
+        ]
+    ],
+    ['Drop Pod #7',
+        [
+            [6, 100],
+            [12, 100],
+            [12, 106],
+            [6, 106],
+        ]
+    ],
+    ['Drop Pod #8',
+        [
+            [36, 92],
+            [42, 92],
+            [42, 98],
+            [36, 98],
+        ]
+    ],
+    ['Drop Pod #9',
+        [
+            [0, 122],
+            [6, 122],
+            [6, 128],
+            [0, 128],
+        ]
+    ],
+    ['Drop Pod #10',
+        [
+            [30, 92],
+            [36, 92],
+            [36, 98],
+            [30, 98],
+        ]
+    ],
+    ['Drop Pod #11',
+        [
+            [6, 116],
+            [12, 116],
+            [12, 122],
+            [6, 122],
+        ]
+    ],
+    ['Drop Pod #12',
+        [
+            [6, 122],
+            [12, 122],
+            [12, 128],
+            [6, 128],
+        ]
+    ],
+    ['Drop Pod #13',
+        [
+            [6, 94],
+            [12, 94],
+            [12, 100],
+            [6, 100],
+        ]
+    ],
+    ['Drop Pod #14',
+        [
+            [0, 116],
+            [6, 116],
+            [6, 122],
+            [0, 122],
+        ]
+    ],
+    ['Drop Pod #15',
+        [
+            [0, 92],
+            [6, 92],
+            [6, 98],
+            [0, 98],
+        ]
+    ],
     ['Ship #1',
         [
             [5.2433,2.5596],
@@ -1428,6 +1548,7 @@ def get_game_events(data_json_,list_player_name,replay):
     get_destruction_by_obj_name(output,'A camera','SentryGun2',True,True)
     get_destruction_by_obj_name(output,'The blood tester','TechLab2',False,False)
     get_destruction_by_obj_name(output,'Moon LZ-1486A','MoonLZ1486A',False,False)
+    get_destruction_by_obj_name(output,'Desert Planet LZ-1486','PlanetLZ1486',False,False)
     get_destruction_by_obj_name(output,'Station','SJSpaceStationMercenary',False,False)
     get_destruction_by_obj_name(output, 'Shuttle engine', 'SpaceshipEngine',False,False)
 
@@ -1641,8 +1762,7 @@ def main():
     key_role['ChiefMaitanenceOfficerUpgrade22'] = 'DSM'
 
     list_player_role = ['Unknown'] * 12
-    list_event_role_assn = [event for event in replay.events if
-                            event.name == 'UpgradeCompleteEvent' and event.upgrade_type_name in key_role.keys()]
+    list_event_role_assn = [event for event in replay.events if event.name == 'UpgradeCompleteEvent' and event.upgrade_type_name in key_role.keys()]
     for event in list_event_role_assn:
         list_player_role[event.player.sid] = key_role[event.upgrade_type_name]
 
@@ -1660,7 +1780,7 @@ def main():
         except:
             spawn_rate = 'N/A'
         
-        tmp_metadata = ('[#%2d] [K: %3s] [G: %4s] [I: %2s] [S: %s ] [%-15s] [%3s] [%6s] ' % (ii+1, list_player_karma[ii], list_player_games[ii],
+        tmp_metadata = ('[#%2d] [K: %3s] [G: %4s] [I: %2s] [S:%4s ] [%-15s] [%3s] [%6s] ' % (ii+1, list_player_karma[ii], list_player_games[ii],
                                      list_player_innocent[ii],spawn_rate,
                                      list_player_handles[ii], list_player_role[ii], list_player_color_txt[ii])).encode('utf-8')
         if len(list_player_clan[ii]) > 0:
