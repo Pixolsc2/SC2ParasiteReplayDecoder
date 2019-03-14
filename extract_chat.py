@@ -79,6 +79,9 @@ def main():
                         print('Adding %s (#%d) to filter list'%(list_player_name[yy],yy+1))
                 if not player_found:
                     print('Could not find player: %s'%x)
+        if len(search_ID) == 0:
+            print('No names to filter')
+            return
     else:
         enable_filter = False
 
