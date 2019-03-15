@@ -812,7 +812,7 @@ def print_activity(replay_,list_player_name_,list_player_role_):
             time_death = -1
 
         list_player_activity[player_num] = ['   '] * gamelength
-        list_events = [event.second / 60 for event in replay_.events if event.name in list_activity_tags and event.player.sid == player_num]
+        list_events = [event.second / 60 for event in replay_.events if event.name in list_activity_tags and 'player' in event.__dict__.keys() and event.player.sid == player_num]
         for minute_num in range(gamelength):
             if minute_num > time_leave or minute_num > time_death or time_death == -1:
                 list_player_activity[player_num][minute_num] = '   '
