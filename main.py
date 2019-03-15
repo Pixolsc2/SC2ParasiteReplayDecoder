@@ -1369,7 +1369,10 @@ def get_game_events(data_json_,list_player_name,replay):
             if id_src is not None and id_src < 12: # Killer is a player
                 name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src) + killing_unit
             elif id_src == 12 or id_src == 13: # Killer is an AI
-                name_src = replay.entity[id_src+1].name + ' (AI)' + killing_unit
+                try:
+                    name_src = replay.entity[id_src+1].name + ' (AI)' + killing_unit
+                except:
+                    name_src = 'Alien/Security (AI)' + killing_unit
             else: # Killer is unknown (gas, oxy, explosion, etc...)
                 name_src = 'Misc. Obj.' + killing_unit
 
@@ -1509,10 +1512,11 @@ def get_game_events(data_json_,list_player_name,replay):
                 death_location = ''
             if killing_unit is not None and killing_unit.owner is not None:
                 id_src = killing_unit.owner.sid
-                if id_src == 12:
-                    name_src = replay.entity[13].name + ' (AI) (%s)' % substitute_name(get_unit_type_name(killing_unit.id))
-                elif id_src == 13:
-                    name_src = replay.entity[14].name + ' (AI) (%s)' % substitute_name(get_unit_type_name(killing_unit.id))
+                if id_src == 12 or id_src == 13:
+                    try:
+                        name_src = replay.entity[id_src+1].name + ' (AI) (%s)' % substitute_name(get_unit_type_name(killing_unit.id))
+                    except:
+                        name_src = 'Alien/Security (AI) (%s)' % substitute_name(get_unit_type_name(killing_unit.id))
                 else:
                     name_src = list_player_name[id_src] + ' (#%02d) (%s)' % (1+id_src, substitute_name(get_unit_type_name(killing_unit.id)))
                 output.append([time_destroyed,'[%02d:%02d] %s has been destroyed by %s' % (time_min, time_sec, obj_name_disp_, name_src) + death_location])
@@ -1743,6 +1747,8 @@ def main():
     num_players = 12
 
     replay = sc2reader.load_replay(file_sc2replay, load_map=True)
+    if len(replay.observers) < 12:
+        print('Warning: Results may be inaccurate as this program has not been properly tested for games with less than 12 players\n\n')
 
     # Get player information
     list_player_handles = [data['toon_handle'] for data in replay.raw_data['replay.initData']['lobby_state']['slots'][:12]]
@@ -1775,7 +1781,10 @@ def main():
     list_player_role = ['Unknown'] * 12
     list_event_role_assn = [event for event in replay.events if event.name == 'UpgradeCompleteEvent' and event.upgrade_type_name in key_role.keys()]
     for event in list_event_role_assn:
-        list_player_role[event.player.sid] = key_role[event.upgrade_type_name]
+        try:
+            list_player_role[event.player.sid] = key_role[event.upgrade_type_name]
+        except:
+            pass
 
 
     output = get_game_events(data_json,list_player_name,replay)
@@ -1794,7 +1803,7 @@ def main():
         tmp_metadata = ('[#%2d] [K: %3s] [G: %4s] [I: %2s] [S:%4s ] [%-15s] [%3s] [%6s] ' % (ii+1, list_player_karma[ii], list_player_games[ii],
                                      list_player_innocent[ii],spawn_rate,
                                      list_player_handles[ii], list_player_role[ii], list_player_color_txt[ii])).encode('utf-8')
-        if len(list_player_clan[ii]) > 0:
+        if list_player_clan[ii] is not None and len(list_player_clan[ii]) > 0:
             tmp_playername = ('<%s> %s'%(list_player_clan[ii],list_player_name[ii])).encode('utf-8')
         else:
             tmp_playername = ('%s'%(list_player_name[ii])).encode('utf-8')
@@ -1808,6 +1817,9 @@ def main():
 
     print('\n\n\n')
     print_activity(replay,list_player_name,list_player_role)
+
+    if len(replay.observers) < 12:
+        print('\n\nWarning: Results may be inaccurate as this program has not been properly tested for games with less than 12 players')
 
 if __name__ == '__main__':
     main()
