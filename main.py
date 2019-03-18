@@ -5,6 +5,7 @@ import subprocess
 import json
 import sys
 import xml.etree.ElementTree
+import os
 
 def get_bank_info(data_json_):
     list_player_karma_ = ['N/A']*12
@@ -1741,7 +1742,7 @@ def main():
     # with open(file_json) as f:
     #     data_json = [json.loads(line) for line in f]
 
-    str_cmd_json = r'python ".\s2protocol-master\s2protocol\s2_cli.py" --all --ndjson "' + file_sc2replay
+    str_cmd_json = r'python "' + os.path.join(os.path.dirname(os.path.realpath(__file__)),'s2protocol-master\s2protocol\s2_cli.py') + '" --all --ndjson "' + file_sc2replay
     data_json = [json.loads(line) for line in subprocess.check_output(str_cmd_json).split('\n')[:-1]]
 
     num_players = 12
@@ -1800,8 +1801,8 @@ def main():
         except:
             spawn_rate = 'N/A'
         
-        tmp_metadata = ('[#%2d] [K: %3s] [G: %4s] [I: %2s] [S:%4s ] [%-15s] [%3s] [%6s] ' % (ii+1, list_player_karma[ii], list_player_games[ii],
-                                     list_player_innocent[ii],spawn_rate,
+        tmp_metadata = ('[#%2d] [K: %3s] [G: %4s] [I: %2s] [S:%4s (%4s) ] [%-15s] [%3s] [%6s] ' % (ii+1, list_player_karma[ii], list_player_games[ii],
+                                     list_player_innocent[ii],spawn_rate,list_player_spawned[ii],
                                      list_player_handles[ii], list_player_role[ii], list_player_color_txt[ii])).encode('utf-8')
         if list_player_clan[ii] is not None and len(list_player_clan[ii]) > 0:
             tmp_playername = ('<%s> %s'%(list_player_clan[ii],list_player_name[ii])).encode('utf-8')
