@@ -126,6 +126,108 @@ def substitute_name(original_name_):
 
 
 
+
+
+
+
+
+
+
+
+
+
+dict_items = {}
+# General Shop
+dict_items['ItemGrenades222324'] = 'Bomb Defuser'
+dict_items['PowerCell'] = 'Mech Cell'
+dict_items['cvalDAA520GoldFusionccvalBA55D3PowerCellcy'] = 'Gold Cell'
+dict_items['ItemGrenades2'] = 'Cade'
+dict_items['ItemGrenades2223232'] = 'Flare'
+dict_items['ItemGrenades222325'] = 'Repair Kit'
+
+# Gadget Shop
+dict_items['ItemGrenades22232322'] = 'Thermal'
+dict_items['TestWeaponItem222232322'] = 'Janitor Kit'
+dict_items['ItemGrenades222322'] = 'Cloak Kit'
+dict_items['ItemGrenades22'] = 'Sentry Turret'
+dict_items['ItemGrenades225'] = 'Flame Turret'
+dict_items['cval2B3856IBACombatArmorc'] = 'Combat Armor'
+dict_items['TeslaArmor'] = 'Tesla Armor'
+dict_items['TestWeaponItem222232323'] = 'Radio Jammer'
+
+# Explosive Shop (Bombs)
+dict_items['ItemGrenades2232'] = 'Thermite'
+dict_items['ItemGrenades2235'] = 'Mine'
+dict_items['ItemGrenades2234'] = 'Stun Trap'
+dict_items['ItemGrenades223'] = 'Remote Mine'
+dict_items['ItemGrenades2233'] = 'AIED'
+
+# Grenade Shop (Grenades)
+dict_items['ItemGrenades2224'] = 'Grenade'
+dict_items['ItemGrenades22242'] = 'Pulse Grenade'
+dict_items['FlashbangGrenade'] = 'Flash Grenade'
+dict_items['MolotovGrenade'] = 'Molotov Grenade'
+dict_items['SmokeGrenade2'] = 'Smoke Grenade'
+
+# Med Shop
+dict_items['ItemGrenades2225'] = 'Healing Kit'
+dict_items['ItemGrenades2222'] = 'Energy Kit'
+dict_items['ItemGrenades2223'] = 'Oxy Tank'
+dict_items['ItemGrenades22232'] = 'Portable Autodoc'
+dict_items['ItemGrenades2223222'] = 'Portable BT'
+dict_items['MedKit'] = 'MedKit'
+dict_items['Stimpack'] = 'StimPack Shot'
+dict_items['Adrenaline'] = 'Adrenaline Shot'
+dict_items['OxygenShot'] = 'Oxygen Shot'
+dict_items['ItemGrenades2224222'] = 'Morphine Shot'
+
+# Weapon Shop (Physical)
+dict_items['TestWeaponItem2232'] = 'Gauss'
+dict_items['211VPlasmaCutter'] = 'Plasma Cutter'
+dict_items['TestWeaponItem223222'] = 'Shotgun'
+dict_items['ReconRifle'] = 'Sniper'
+dict_items['TestWeaponItem2222'] = 'Flamer'
+dict_items['TestWeaponItem22222'] = 'Subzero'
+dict_items['ArcWelder'] = 'Arc Welder'
+dict_items['TestWeaponItem22'] = 'Minigun'
+dict_items['DSR55AntiMaterialRifle'] = 'DSR-55'
+
+# Weapon Shop (Energy)
+dict_items['GammaGun'] = 'Gamma'
+dict_items['TestWeaponItem222'] = 'Laser'
+dict_items['NeutroniumRifle'] = 'Neutro'
+dict_items['TestWeaponItem2232222222'] = 'Pulse'
+dict_items['ParticlePhaser'] = 'Particle'
+dict_items['TestWeaponItem2233'] = 'Plasma'
+dict_items['TestWeaponItem223222222'] = 'Fusion Rail'
+dict_items['TestWeaponItem22322223'] = 'Lightsaber'
+
+
+def print_item_purchases(replay_,list_player_name_):
+    for player_num in range(12):
+        list_item_purchase = [[event.frame, event.unit_upkeeper.sid, event.location, dict_items[event.unit_type_name], event.unit.id] for event in replay_.events if event.name == 'UnitBornEvent' and event.frame > 8*16 and event.unit_upkeeper != None and event.unit_upkeeper.sid == player_num and event.unit_type_name in dict_items]
+
+        duplicate_tracker = []
+        for item_purchase in list_item_purchase:
+            purchase_location = ' (%s)' % get_location(item_purchase[2])
+            time_gameloop = item_purchase[0]
+            time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+            time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+            id_src = item_purchase[1]
+            name_src = list_player_name_[id_src] + ' (#%02d)' % (1 + id_src)
+            item_name = item_purchase[3]
+            if duplicate_tracker == item_purchase:
+                continue
+            item_death = [event.frame for event in replay_.events if event.name == 'UnitDiedEvent' and event.unit.id == item_purchase[4]]
+            if len(item_death) > 0 and abs(item_death[0] - item_purchase[0]) < 16 * 3:
+                print('[%02d:%02d] %s attempted to purchased %s with full inventory' % (time_min, time_sec, name_src, item_name) + purchase_location)
+                continue
+            print('[%02d:%02d] %s purchased %s' % (time_min, time_sec, name_src, item_name) + purchase_location)
+            duplicate_tracker = item_purchase
+        if len(list_item_purchase) > 0:
+            print('')
+
+
 def get_location(location_):
     for region_num in range(len(list_regions)):
         p = path.Path(list_regions[region_num][1])
@@ -883,6 +985,7 @@ def print_activity(replay_,list_player_name_,list_player_role_):
 
 def get_game_events(data_json_,list_player_name,replay):
     output = []
+    item_purchases = []
     death_tracker = [None] * 12
     remotemine_id_tracker = []
     remotemine_owner_tracker = []
@@ -933,8 +1036,10 @@ def get_game_events(data_json_,list_player_name,replay):
         return unit_type_name_
 
     for datum in data_json_:
-        if '_event' in datum.keys() and datum['_event'] == 'NNet.Replay.Tracker.SUnitBornEvent' and datum[
-            'm_unitTypeName'] == 'Marine':
+        if '_event' in datum.keys() and datum['_event'] == 'NNet.Replay.Tracker.SUnitBornEvent' and datum['m_unitTypeName'] == 'Marine':
+            death_tracker[datum['m_upkeepPlayerId'] - 1] = datum['m_unitTagIndex']
+
+        if '_event' in datum.keys() and datum['_event'] == 'NNet.Replay.Tracker.SUnitBornEvent' and datum['m_unitTypeName'] == 'Marine':
             death_tracker[datum['m_upkeepPlayerId'] - 1] = datum['m_unitTagIndex']
 
         # track item use near gas tanks (experimental since ability link value may change each patch)
@@ -1815,6 +1920,10 @@ def main():
         if ii>0 and ii%3 == 0:
             print('')
         print(output[ii].encode('utf-8'))
+
+    print('\n\n\nPurchases:')
+    print_item_purchases(replay, list_player_name)
+
 
     print('\n\n\n')
     print_activity(replay,list_player_name,list_player_role)
