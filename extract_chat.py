@@ -3,6 +3,7 @@ import numpy as np
 import subprocess
 import json
 import sys
+import os
 
 def main():
     try:
@@ -14,10 +15,35 @@ def main():
     # load replay in another format
     replay = sc2reader.load_replay(file_sc2replay)
 
+    # List of Devs/Mods
+    list_godspeak_handles = ["1-S2-1-1790706",
+                             "1-S2-1-5862849",
+                             "1-S2-1-10501340",
+                             "1-S2-1-586913",
+                             "1-S2-1-575623",
+                             "1-S2-1-5947630",
+                             "2-S2-1-5202779",
+                             "1-S2-1-619412",
+                             "2-S2-1-2049961",
+                             "1-S2-1-5133855",
+                             "3-S2-1-364257",
+                             "3-S2-1-4522456",
+                             "3-S2-1-5159369",
+                             "3-S2-1-4674764",
+                             "1-S2-1-4815582",
+                             "2-S2-1-4072182",
+                             "1-S2-1-5862849",
+                             "1-S2-1-10501340",
+                             "1-S2-1-586913",
+                             "1-S2-1-3270554",
+                             "3-S2-1-5691919",
+                             "2-S2-1-6580713",
+                             "3-S2-1-3830671",
+                            ]
+
     # Get player names
     list_player_name = [data['name'] for data in replay.raw_data['replay.initData']['user_initial_data'][:12]]
     list_player_clan = [data['clan_tag'] for data in replay.raw_data['replay.initData']['user_initial_data'][:12]]
-
 
     # Get player handles
     list_player_handles = [data['toon_handle'] for data in replay.raw_data['replay.initData']['lobby_state']['slots'][:12]]
@@ -44,17 +70,23 @@ def main():
     list_event_role_assn = [event for event in replay.events if
                             event.name == 'UpgradeCompleteEvent' and event.upgrade_type_name in key_role.keys()]
     for event in list_event_role_assn:
-        list_player_role[event.player.sid] = key_role[event.upgrade_type_name]
+        try:
+            list_player_role[event.player.sid] = key_role[event.upgrade_type_name]
+        except:
+            pass
 
     # Display player list
     print('\nPlayer List:')
     for ii in range(len(list_player_name)):
         tmp_metadata = ('[#%2d] [%-15s] [%3s] [%6s] ' % (ii+1, list_player_handles[ii], list_player_role[ii], list_player_color_txt[ii])).encode('utf-8')
-        if len(list_player_clan[ii]) > 0:
-            tmp_playername = ('<%s> %s'%(list_player_clan[ii],list_player_name[ii])).encode('utf-8')
-        else:
-            tmp_playername = ('%s'%(list_player_name[ii])).encode('utf-8')
-        print(tmp_metadata+tmp_playername)
+        try:
+            if len(list_player_clan[ii]) > 0:
+                tmp_playername = ('<%s> %s'%(list_player_clan[ii],list_player_name[ii])).encode('utf-8')
+            else:
+                tmp_playername = ('%s'%(list_player_name[ii])).encode('utf-8')
+            print(tmp_metadata+tmp_playername)
+        except:
+            pass
 
     # Check for player name search
     print('\n')
@@ -107,9 +139,10 @@ def main():
     # Extract messages and categorize into Observer, Infested, or All chat
     # Currently unable to differentiate between Alien and Human form while they are talking in All-Chat
     print('\n\nNow extracting chat log...\n')
-    str_cmd_json = r'python ".\s2protocol-master\s2protocol\s2_cli.py" --all --ndjson "' + file_sc2replay
+    str_cmd_json = r'python "' + os.path.join(os.path.dirname(os.path.realpath(__file__)),'s2protocol-master\s2protocol\s2_cli.py') + '" --all --ndjson "' + file_sc2replay
     data_json = [json.loads(line) for line in subprocess.check_output(str_cmd_json).split('\n')[:-1]]
     list_player_alienchat_mode = [0]*12
+    list_player_godspeak_mode = [0]*12
     for datum in data_json:
         if '_event' in datum.keys() and datum['_event'] == 'NNet.Game.STriggerDialogControlEvent' and 'm_eventData' in datum.keys() and 'MouseButton' in datum['m_eventData'].keys() and datum['m_eventData']['MouseButton'] == 1:
             id_dst = datum['_userid']['m_userId']
@@ -129,6 +162,13 @@ def main():
                 if (not enable_filter) or (enable_filter and id_dst in search_ID):
                     output_msg.append([time_gameloop, '[%02d:%02d] [NEWSPAWN] [%4s] [%3s] %s is now an Alien Spawn' % (time_min, time_sec, list_player_color_txt[id_dst], list_player_role[id_dst], name_dst)])
 
+        if '_event' in datum.keys() and datum['_event'] == 'NNet.Game.STriggerKeyPressedEvent' and 'm_key' in datum.keys() and datum['m_key'] in [18,31]:
+            id_dst = datum['_userid']['m_userId']
+            if list_player_handles[id_dst] in list_godspeak_handles:
+                list_player_godspeak_mode[id_dst] = not list_player_godspeak_mode[id_dst]
+
+
+
 
         if '_event' in datum.keys() and datum['_event'] == 'NNet.Game.STriggerChatMessageEvent':
             id_dst = datum['_userid']['m_userId']
@@ -138,7 +178,9 @@ def main():
             time_gameloop = datum['_gameloop']
             msg = datum['m_chatMessage']
 
-            if time_gameloop >= list_player_death_times[id_dst]:
+            if list_player_godspeak_mode[id_dst]:
+                chat_mode = 'GodSpeak'
+            elif time_gameloop >= list_player_death_times[id_dst]:
                 chat_mode = 'Observer'
             elif list_player_alienchat_mode[id_dst]:
                 chat_mode = 'Infested'
