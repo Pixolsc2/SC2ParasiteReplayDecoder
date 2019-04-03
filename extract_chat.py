@@ -143,10 +143,20 @@ def main():
     data_json = [json.loads(line) for line in subprocess.check_output(str_cmd_json).split('\n')[:-1]]
     list_player_alienchat_mode = [0]*12
     list_player_godspeak_mode = [0]*12
+    list_player_observer_mode = [0]*12
     for datum in data_json:
         if '_event' in datum.keys() and datum['_event'] == 'NNet.Game.STriggerDialogControlEvent' and 'm_eventData' in datum.keys() and 'MouseButton' in datum['m_eventData'].keys() and datum['m_eventData']['MouseButton'] == 1:
             id_dst = datum['_userid']['m_userId']
-            list_player_alienchat_mode[id_dst] = not list_player_alienchat_mode[id_dst]
+            if list_player_handles[id_dst] in list_godspeak_handles:
+                if datum['m_controlId'] == 23:
+                    list_player_godspeak_mode[id_dst] = not list_player_godspeak_mode[id_dst]
+                elif datum['m_controlId'] == 25:
+                    list_player_observer_mode[id_dst] = not list_player_observer_mode[id_dst]
+                elif datum['m_controlId'] == 27:
+                    list_player_alienchat_mode[id_dst] = not list_player_alienchat_mode[id_dst]
+            else:
+                list_player_alienchat_mode[id_dst] = not list_player_alienchat_mode[id_dst]
+
 
         # Check who is Alien Host/Spawn
         if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'CanUseGeneModAlien':
@@ -162,13 +172,11 @@ def main():
                 if (not enable_filter) or (enable_filter and id_dst in search_ID):
                     output_msg.append([time_gameloop, '[%02d:%02d] [NEWSPAWN] [%4s] [%3s] %s is now an Alien Spawn' % (time_min, time_sec, list_player_color_txt[id_dst], list_player_role[id_dst], name_dst)])
 
-        if '_event' in datum.keys() and datum['_event'] == 'NNet.Game.STriggerKeyPressedEvent' and 'm_key' in datum.keys() and datum['m_key'] in [18,31]:
-            id_dst = datum['_userid']['m_userId']
-            if list_player_handles[id_dst] in list_godspeak_handles:
-                list_player_godspeak_mode[id_dst] = not list_player_godspeak_mode[id_dst]
-
-
-
+        # This is an older implementation of GodSpeak. Latest implementation uses a button click similar to alien chat
+        # if '_event' in datum.keys() and datum['_event'] == 'NNet.Game.STriggerKeyPressedEvent' and 'm_key' in datum.keys() and datum['m_key'] in [18,31]:
+        #     id_dst = datum['_userid']['m_userId']
+        #     if list_player_handles[id_dst] in list_godspeak_handles:
+        #         list_player_godspeak_mode[id_dst] = not list_player_godspeak_mode[id_dst]
 
         if '_event' in datum.keys() and datum['_event'] == 'NNet.Game.STriggerChatMessageEvent':
             id_dst = datum['_userid']['m_userId']
@@ -180,7 +188,7 @@ def main():
 
             if list_player_godspeak_mode[id_dst]:
                 chat_mode = 'GodSpeak'
-            elif time_gameloop >= list_player_death_times[id_dst]:
+            elif time_gameloop >= list_player_death_times[id_dst] or list_player_observer_mode[id_dst]:
                 chat_mode = 'Observer'
             elif list_player_alienchat_mode[id_dst]:
                 chat_mode = 'Infested'
