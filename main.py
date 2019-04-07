@@ -13,6 +13,8 @@ def get_bank_info(data_json_):
     list_player_spawned_ = ['N/A']*12
     list_player_human_ = ['N/A']*12
     list_player_innocent_ = ['0']*12
+    list_player_optin_ = ['Unk']*12
+    list_optin_choice = ['Hum','Ali','Psi','Dro']
     for datum in data_json_:
         # karma
         if '_event' in datum.keys() and datum['_event'] == 'NNet.Game.SBankKeyEvent' and 'm_name' in datum.keys() and datum['m_name'] == 'K':
@@ -43,7 +45,17 @@ def get_bank_info(data_json_):
             user_id = datum['_userid']['m_userId']
             user_val = datum['m_data']
             list_player_innocent_[user_id] = user_val
-    return list_player_karma_, list_player_games_, list_player_spawned_, list_player_human_, list_player_innocent_
+
+        if '_event' in datum.keys() and datum['_event'] == 'NNet.Replay.Tracker.SUpgradeEvent' and 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'DummyOpts':
+            user_id = datum['m_playerId']-1
+            user_val = datum['m_count']-1
+            try:
+                list_player_optin_[user_id] = list_optin_choice[user_val]
+            except:
+                pass
+
+
+    return list_player_karma_, list_player_games_, list_player_spawned_, list_player_human_, list_player_innocent_, list_player_optin_
 
 def filter_abildata(e_):
     e_parsed_ = []
@@ -77,6 +89,7 @@ list_names['Beacon_TerranSmall2332322264'] = 'Head Crab'
 list_names['Beacon_TerranSmall2332322243'] = 'Explosion'
 list_names['Beacon_TerranSmall23323222432'] = 'Fuel Tank Explosion'
 list_names['Beacon_TerranSmall233232224'] = 'Fire'
+list_names['Beacon_TerranSmall2332322242'] = 'Fire'
 list_names['BreachingCharge'] = 'Thermite'
 list_names['RoguePurifier'] = 'C.O.R.E'
 list_names['MengskWraith2'] = 'Shuttle'
@@ -87,6 +100,11 @@ list_names['NovaAlarmBot'] = 'AIED'
 list_names['HelsAngelAssault'] = 'T-800 Eliminator'
 list_names['PrimalTownHallUprooted'] = 'Hydradon'
 list_names['SpiderMine2'] = 'Mine'
+list_names['BattleHellion'] = 'Hades Mech'
+list_names['Liberator22'] = 'Assault Cruiser'
+list_names['MengskWraith232'] = 'Battle Cruiser'
+list_names['TitanMechAssault2'] = 'Atlas Mech'
+list_names['SiegeBreaker'] = 'Hercules Mech'
 
 
 # Alien Forms
@@ -112,6 +130,7 @@ list_names['XenomorphMatriarch'] = 'Matriarch Queen T5'
 list_names['Yagdra'] = 'Flame Gargantuan T5'
 list_names['AlphaXenodon'] = 'Ultralisk T5'
 list_names['Broodlord'] = 'Flying Crab T5'
+list_names['BroodLord'] = 'Flying Crab T5'
 list_names['Dehaka'] = 'Veloci Dehaka T5'
 
 
@@ -152,7 +171,9 @@ dict_items['ItemGrenades222322'] = 'Cloak Kit'
 dict_items['ItemGrenades22'] = 'Sentry Turret'
 dict_items['ItemGrenades225'] = 'Flame Turret'
 dict_items['cval2B3856IBACombatArmorc'] = 'Combat Armor'
+dict_items['cval2B3856I'] = 'Combat Armor'
 dict_items['TeslaArmor'] = 'Tesla Armor'
+dict_items['chalupaman'] = 'Tesla Armor'
 dict_items['TestWeaponItem222232323'] = 'Radio Jammer'
 
 # Explosive Shop (Bombs)
@@ -189,6 +210,7 @@ dict_items['ReconRifle'] = 'Sniper'
 dict_items['TestWeaponItem2222'] = 'Flamer'
 dict_items['TestWeaponItem22222'] = 'Subzero'
 dict_items['ArcWelder'] = 'Arc Welder'
+dict_items['testitem69696969'] = 'Arc Welder'
 dict_items['TestWeaponItem22'] = 'Minigun'
 dict_items['DSR55AntiMaterialRifle'] = 'DSR-55'
 
@@ -198,9 +220,11 @@ dict_items['TestWeaponItem222'] = 'Laser'
 dict_items['NeutroniumRifle'] = 'Neutro'
 dict_items['TestWeaponItem2232222222'] = 'Pulse'
 dict_items['ParticlePhaser'] = 'Particle'
+dict_items['hah'] = 'Particle'
 dict_items['TestWeaponItem2233'] = 'Plasma'
 dict_items['TestWeaponItem223222222'] = 'Fusion Rail'
 dict_items['TestWeaponItem22322223'] = 'Lightsaber'
+dict_items['Lightsaber'] = 'Lightsaber'
 
 
 def print_item_purchases(replay_,list_player_name_):
@@ -220,9 +244,9 @@ def print_item_purchases(replay_,list_player_name_):
                 continue
             item_death = [event.frame for event in replay_.events if event.name == 'UnitDiedEvent' and event.unit.id == item_purchase[4]]
             if len(item_death) > 0 and abs(item_death[0] - item_purchase[0]) < 16 * 3:
-                print('[%02d:%02d] %s attempted to purchased %s with full inventory' % (time_min, time_sec, name_src, item_name) + purchase_location)
+                print('[%02d:%02d] %s attempted to purchased %s with full inventory' % (time_min, time_sec, name_src.encode('utf-8'), item_name) + purchase_location)
                 continue
-            print('[%02d:%02d] %s purchased %s' % (time_min, time_sec, name_src, item_name) + purchase_location)
+            print('[%02d:%02d] %s purchased %s' % (time_min, time_sec, name_src.encode('utf-8'), item_name) + purchase_location)
             duplicate_tracker = item_purchase
         if len(list_item_purchase) > 0:
             print('')
@@ -1469,7 +1493,7 @@ def get_game_events(data_json_,list_player_name,replay):
             elif marine_sel.killing_unit.name is None:
                 killing_unit = ' (%s)' % substitute_name(get_unit_type_name(marine_sel.killing_unit.id))
             else:
-                killing_unit = ' (%s)' % marine_sel.killing_unit.name
+                killing_unit = ' (%s)' % substitute_name(marine_sel.killing_unit.name)
 
             # Format death details
             if id_src is not None and id_src < 12: # Killer is a player
@@ -1651,7 +1675,7 @@ def get_game_events(data_json_,list_player_name,replay):
         obj_loc_blkcoord = [[float(val) for val in child.attrib['Position'].split(',')[0:2]] for child in
                    list_objects._children if
                    'UnitType' in child.keys() and child.attrib['UnitType'] == obj_name_file_]
-        list_atks = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent','TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and any([check_dist(list(event.location[0:2]),loc)<3. for loc in obj_loc_blkcoord])]
+        list_atks = [event for event in replay.events if event.name in ['UpdateTargetUnitCommandEvent','TargetUnitCommandEvent'] and event.ability_name == 'Attack' and event.ability.name != 'RightClick' and any([check_dist(list(event.location[0:2]),loc)<0.5 for loc in obj_loc_blkcoord])]
         for event in list_atks:
             if show_location_:
                 death_location = ' (%s)'%get_location(event.location)
@@ -1861,7 +1885,7 @@ def main():
     list_player_clan = [data['clan_tag'] for data in replay.raw_data['replay.initData']['user_initial_data'][:12]]
     # for data in replay.raw_data['replay.initData']['user_initial_data'][:12]:
     list_player_name = [data['name'] for data in replay.raw_data['replay.initData']['user_initial_data'][:12]]
-    list_player_karma, list_player_games, list_player_spawned, list_player_human, list_player_innocent = get_bank_info(data_json)
+    list_player_karma, list_player_games, list_player_spawned, list_player_human, list_player_innocent, list_player_optin = get_bank_info(data_json)
     
 
 
@@ -1884,7 +1908,7 @@ def main():
     key_role['ChiefMaitanenceOfficerUpgrade2'] = 'SG'
     key_role['ChiefMaitanenceOfficerUpgrade22'] = 'DSM'
 
-    list_player_role = ['Unknown'] * 12
+    list_player_role = ['Unk'] * 12
     list_event_role_assn = [event for event in replay.events if event.name == 'UpgradeCompleteEvent' and event.upgrade_type_name in key_role.keys()]
     for event in list_event_role_assn:
         try:
@@ -1906,9 +1930,9 @@ def main():
         except:
             spawn_rate = 'N/A'
         
-        tmp_metadata = ('[#%2d] [K: %3s] [G: %4s] [I: %2s] [S:%4s (%4s) ] [%-15s] [%3s] [%6s] ' % (ii+1, list_player_karma[ii], list_player_games[ii],
+        tmp_metadata = ('[#%2d] [K: %3s] [G: %4s] [I: %2s] [S:%4s (%4s) ] [%-15s] [%3s] [%6s] [%3s] ' % (ii+1, list_player_karma[ii], list_player_games[ii],
                                      list_player_innocent[ii],spawn_rate,list_player_spawned[ii],
-                                     list_player_handles[ii], list_player_role[ii], list_player_color_txt[ii])).encode('utf-8')
+                                     list_player_handles[ii], list_player_role[ii], list_player_color_txt[ii], list_player_optin[ii])).encode('utf-8')
         if list_player_clan[ii] is not None and len(list_player_clan[ii]) > 0:
             tmp_playername = ('<%s> %s'%(list_player_clan[ii],list_player_name[ii])).encode('utf-8')
         else:
