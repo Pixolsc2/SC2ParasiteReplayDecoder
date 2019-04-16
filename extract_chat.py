@@ -185,6 +185,7 @@ def main():
             time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
             time_gameloop = datum['_gameloop']
             msg = datum['m_chatMessage']
+            msg = msg.encode('ISO-8859-1').decode('utf-8')
 
             if list_player_godspeak_mode[id_dst]:
                 chat_mode = 'GodSpeak'

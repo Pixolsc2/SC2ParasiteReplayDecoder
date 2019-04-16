@@ -105,7 +105,7 @@ list_names['Liberator22'] = 'Assault Cruiser'
 list_names['MengskWraith232'] = 'Battle Cruiser'
 list_names['TitanMechAssault2'] = 'Atlas Mech'
 list_names['SiegeBreaker'] = 'Hercules Mech'
-
+list_names['HelsAngelFighter'] = 'SuperSonic Droid'
 
 # Alien Forms
 list_names['InfestedTerran2'] = 'Infested Terran T1'
@@ -1184,7 +1184,7 @@ def get_game_events(data_json_,list_player_name,replay):
 
         # Track fire from explosions
         if '_event' in datum.keys() and datum['_event'] == "NNet.Replay.Tracker.SUnitBornEvent" and datum[
-            'm_unitTypeName'] == 'Beacon_TerranSmall233232224' and datum['m_upkeepPlayerId'] == 0 and datum[
+            'm_unitTypeName'] == 'Beacon_TerranSmall233232224' and datum['m_upkeepPlayerId'] == 0 and 'm_creatorUnitTagRecycle' in datum.keys() and datum[
             'm_creatorUnitTagRecycle'] == None:
             time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
             time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
@@ -1589,7 +1589,9 @@ def get_game_events(data_json_,list_player_name,replay):
     # Track Android Evolution
     time_t800 = [[event.player.sid,event.frame] for event in replay.events if event.name == 'UpgradeCompleteEvent' and event.upgrade_type_name == 'ChassisSelectedT800']
     time_synth = [[event.player.sid,event.frame] for event in replay.events if event.name == 'UpgradeCompleteEvent' and event.upgrade_type_name == 'ChassisSelectedSyntheticForm']
+    time_supersonic = [[event.player.sid,event.frame] for event in replay.events if event.name == 'UpgradeCompleteEvent' and event.upgrade_type_name == 'ChassisSelectedX6Supersonic']
     if len(time_t800) == 1 and len(time_synth) == 1 and time_t800[0][0] == time_synth[0][0]:
+        android_chassis = None
         id_dst = time_t800[0][0]
         name_dst = list_player_name[id_dst] + ' (#%02d)' % (1 + id_dst)
         if time_synth[0][1] > time_t800[0][1]:
@@ -1600,7 +1602,20 @@ def get_game_events(data_json_,list_player_name,replay):
             android_chassis = 'Synthetic'
         time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
         time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
-        output.append([time_gameloop, '[%02d:%02d] %s upgraded to %s Chassis' % (time_min, time_sec, name_dst, android_chassis)])
+        if android_chassis:
+            output.append([time_gameloop, '[%02d:%02d] %s upgraded to %s Chassis' % (time_min, time_sec, name_dst, android_chassis)])
+    if len(time_supersonic) == 1 and len(time_synth) == 1 and time_supersonic[0][0] == time_synth[0][0]:
+        android_chassis = None
+        id_dst = time_supersonic[0][0]
+        name_dst = list_player_name[id_dst] + ' (#%02d)' % (1 + id_dst)
+        if time_supersonic[0][1] < time_synth[0][1]:
+            time_gameloop = time_supersonic[0][1]
+            android_chassis = 'SuperSonic'
+        time_min = np.floor(time_gameloop / 1000. * 62.5 / 60).astype('int')
+        time_sec = np.floor(time_gameloop / 1000. * 62.5 % 60)
+        if android_chassis:
+            output.append([time_gameloop, '[%02d:%02d] %s upgraded to %s Chassis' % (time_min, time_sec, name_dst, android_chassis)])
+
 
     # Track AIED usage
     list_event_aied_born = [event for event in replay.events if
@@ -1880,6 +1895,11 @@ def main():
     if len(replay.observers) < 12:
         print('Warning: Results may be inaccurate as this program has not been properly tested for games with less than 12 players\n\n')
 
+    if replay.resume_user_info:
+        print('This replay has been taken over at some point. Please see the information below:')
+        print(replay.resume_user_info)
+
+
     # Get player information
     list_player_handles = [data['toon_handle'] for data in replay.raw_data['replay.initData']['lobby_state']['slots'][:12]]
     list_player_clan = [data['clan_tag'] for data in replay.raw_data['replay.initData']['user_initial_data'][:12]]
@@ -1930,7 +1950,7 @@ def main():
         except:
             spawn_rate = 'N/A'
         
-        tmp_metadata = ('[#%2d] [K: %3s] [G: %4s] [I: %2s] [S:%4s (%4s) ] [%-15s] [%3s] [%6s] [%3s] ' % (ii+1, list_player_karma[ii], list_player_games[ii],
+        tmp_metadata = ('[#%2d] [K: %3s] [G: %4s] [I: %2s] [S:%4s (%4s) ] [%-15s] [%3s] [%6s] [O: %3s] ' % (ii+1, list_player_karma[ii], list_player_games[ii],
                                      list_player_innocent[ii],spawn_rate,list_player_spawned[ii],
                                      list_player_handles[ii], list_player_role[ii], list_player_color_txt[ii], list_player_optin[ii])).encode('utf-8')
         if list_player_clan[ii] is not None and len(list_player_clan[ii]) > 0:
