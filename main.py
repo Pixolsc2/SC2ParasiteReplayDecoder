@@ -6,6 +6,8 @@ import json
 import sys
 import xml.etree.ElementTree
 import os
+from collections import Counter
+
 
 def get_bank_info(data_json_):
     list_player_karma_ = ['N/A']*12
@@ -14,7 +16,7 @@ def get_bank_info(data_json_):
     list_player_human_ = ['N/A']*12
     list_player_innocent_ = ['0']*12
     list_player_optin_ = ['Unk']*12
-    list_optin_choice = ['Hum','Ali','Psi','Dro']
+    list_optin_choice = ['Hum','Ali','Psi','Dro','RND']
     for datum in data_json_:
         # karma
         if '_event' in datum.keys() and datum['_event'] == 'NNet.Game.SBankKeyEvent' and 'm_name' in datum.keys() and datum['m_name'] == 'K':
@@ -1217,7 +1219,7 @@ def get_game_events(data_json_,list_player_name,replay):
                 [time_gameloop, '[%02d:%02d] %s has left the game (%s)' % (time_min, time_sec, name_dst, leave_reason)])
 
         # Check who is Psion
-        if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'PlayerIsPsion':
+        if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'PlayerIsPsion' and datum['m_count'] > 0:
             id_dst = datum['m_playerId'] - 1
             name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
             time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
@@ -1275,7 +1277,7 @@ def get_game_events(data_json_,list_player_name,replay):
             output.append([time_gameloop, '[%02d:%02d] %s\'s Psionic Alignment: %d (GOOD)' % (time_min, time_sec, name_dst, psionic_alignment)])
 
         # Check who is Android
-        if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'PlayerisAndroid':
+        if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'PlayerisAndroid' and datum['m_count'] > 0:
             id_dst = datum['m_playerId'] - 1
             name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
             time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
@@ -1292,22 +1294,22 @@ def get_game_events(data_json_,list_player_name,replay):
         #     time_gameloop = datum['_gameloop']
         #     output.append([time_gameloop, '[%02d:%02d] %s upgraded to T-800 Android Chassis' % (time_min, time_sec, name_dst)])
 
-        # Check Core Directive Assignment (experimental since there's no upgrade-tag for evil vs good role)
-        if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'COREDIRECTIVE':
-            id_dst = datum['m_playerId'] - 1
-            name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
-            time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
-            time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
-            time_gameloop = datum['_gameloop']
-            if time_gameloop == 3088:
-                output.append([time_gameloop, '[%02d:%02d] %s received GOOD DIRECTIVE: OBEDIENCE' % (time_min, time_sec, name_dst)])
-            elif time_gameloop == 3072:
-                output.append([time_gameloop, '[%02d:%02d] %s received EVIL DIRECTIVE: THE TRUE END HAS COME' % (time_min, time_sec, name_dst)])
-            else:
-                output.append([time_gameloop, '[%02d:%02d] %s received an UNKNOWN DIRECTIVE (debug code: %d)' % (time_min, time_sec, name_dst, time_gameloop)])
+        # # Check Core Directive Assignment (experimental since there's no upgrade-tag for evil vs good role)
+        # if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'COREDIRECTIVE':
+        #     id_dst = datum['m_playerId'] - 1
+        #     name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
+        #     time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
+        #     time_sec = np.floor(datum['_gameloop'] / 1000. * 62.5 % 60)
+        #     time_gameloop = datum['_gameloop']
+        #     if time_gameloop == 3088:
+        #         output.append([time_gameloop, '[%02d:%02d] %s received GOOD DIRECTIVE: OBEDIENCE' % (time_min, time_sec, name_dst)])
+        #     elif time_gameloop == 3072:
+        #         output.append([time_gameloop, '[%02d:%02d] %s received EVIL DIRECTIVE: THE TRUE END HAS COME' % (time_min, time_sec, name_dst)])
+        #     else:
+        #         output.append([time_gameloop, '[%02d:%02d] %s received an UNKNOWN DIRECTIVE (debug code: %d)' % (time_min, time_sec, name_dst, time_gameloop)])
 
         # Check who is Alien Host/Spawn
-        if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'CanUseGeneModAlien':
+        if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'CanUseGeneModAlien' and datum['m_count'] > 0:
             id_dst = datum['m_playerId'] - 1
             name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
             time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
@@ -1317,7 +1319,7 @@ def get_game_events(data_json_,list_player_name,replay):
                 output.append([time_gameloop, '[%02d:%02d] %s is now an Alien Spawn' % (time_min, time_sec, name_dst)])
 
         # Check who is Alien Host/Spawn
-        if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'AlienIdentificationUpgrade2':
+        if 'm_upgradeTypeName' in datum.keys() and datum['m_upgradeTypeName'] == 'AlienIdentificationUpgrade2' and datum['m_count'] > 0:
             id_dst = datum['m_playerId'] - 1
             name_dst = list_player_name[id_dst] + ' (#%02d)'%(1+id_dst)
             time_min = np.floor(datum['_gameloop'] / 1000. * 62.5 / 60).astype('int')
@@ -1854,6 +1856,46 @@ def get_game_events(data_json_,list_player_name,replay):
         id_src = most_frequent([event.player.sid for event in list_event_btsabotage])
         name_src = list_player_name[id_src] + ' (#%02d)' % (1 + id_src)
         output.append([time_gameloop, '[%02d:%02d] The blood tester has been sabotaged to give false positives by %s' % (time_min, time_sec, name_src)])
+
+    # Android Directive
+    list_android_directives = [[event.frame,event.player.sid,event.upgrade_type_name] for event in replay.events if event.name=='UpgradeCompleteEvent' and event.upgrade_type_name in ['PlayerisAndroidProtectHumanity','PlayerisAndroidEiiminateHumanity','PlayerisAndroidEliminateHumanity','PlayerisAndroidPreserveAlienSpecimens'] and event.count > 0]
+    if len(list_android_directives) == 0:
+        list_android_directives = [[event.frame,event.player.sid,event.upgrade_type_name] for event in replay.events if event.name == 'UpgradeCompleteEvent' and event.upgrade_type_name == 'COREDIRECTIVE' and event.count > 0]
+    for android_directive in list_android_directives:
+        id_dst = android_directive[1]
+        name_dst = list_player_name[id_dst] + ' (#%02d)' % (1 + id_dst)
+        time_gameloop = android_directive[0]
+        time_min = np.floor(time_gameloop  / 16. / 60).astype('int')
+        time_sec = np.floor(time_gameloop / 16. % 60)
+        if android_directive[2] == 'COREDIRECTIVE':
+            if time_gameloop == 3088:
+                output.append([time_gameloop, '[%02d:%02d] %s received GOOD DIRECTIVE: OBEDIENCE' % (time_min, time_sec, name_dst)])
+            elif time_gameloop == 3072:
+                output.append([time_gameloop, '[%02d:%02d] %s received EVIL DIRECTIVE: THE TRUE END HAS COME' % (time_min, time_sec, name_dst)])
+            else:
+                output.append([time_gameloop, '[%02d:%02d] %s received an UNKNOWN DIRECTIVE (debug code: %d)' % (time_min, time_sec, name_dst, time_gameloop)])
+        elif android_directive[2] == 'PlayerisAndroidProtectHumanity':
+            output.append([time_gameloop, '[%02d:%02d] %s received GOOD DIRECTIVE: OBEDIENCE' % (time_min, time_sec, name_dst)])
+        elif android_directive[2] in ['PlayerisAndroidEiiminateHumanity','PlayerisAndroidEliminateHumanity']:
+            output.append([time_gameloop, '[%02d:%02d] %s received EVIL DIRECTIVE: THE TRUE END HAS COME' % (time_min, time_sec, name_dst)])
+        elif android_directive[2] == 'PlayerisAndroidPreserveAlienSpecimens':
+            output.append([time_gameloop, '[%02d:%02d] %s received PRESERVE ALIEN DIRECTIVE: FOR THE SWARM' % (time_min, time_sec, name_dst)])
+    
+    # Revive
+    list_revivetags = ['CanUseGeneMod','CanUseGeneModAlien','HumanIdendificationUpgrade','JimmyDean232','AlienIdentificationUpgrade2','AlienSpawnNameChange','PsionIdentificationUpgrade','PlayerIsPsion','AndroidIdentificationUpgrade','PlayerisAndroid','COREDIRECTIVE','PlayerisAndroidEiiminateHumanity','PlayerisAndroidEliminateHumanity','PlayerisAndroidProtectHumanity']
+    list_revive_events_candidates = Counter(['%02d-%d'%(event.frame,event.player.sid) for event in replay.events if event.name=='UpgradeCompleteEvent' and event.upgrade_type_name in list_revivetags and event.count == 0]).items()
+    list_revive_events = [[int(val) for val in revive_event[0].split('-')] for revive_event in list_revive_events_candidates if revive_event[1]>10]
+    for revive_event in list_revive_events:
+        id_dst = revive_event[1]
+        name_dst = list_player_name[id_dst] + ' (#%02d)' % (1 + id_dst)
+        time_gameloop = revive_event[0]
+        time_min = np.floor(time_gameloop  / 16. / 60).astype('int')
+        time_sec = np.floor(time_gameloop / 16. % 60)
+        list_revival_loc = [event.location for event in replay.events if event.name == 'UnitBornEvent' and event.frame == time_gameloop and event.unit.name == 'Marine' and event.unit_upkeeper.sid == id_dst]
+        if len(list_revival_loc) == 1:
+            revival_loc = get_location(list_revival_loc[0])
+            output.append([time_gameloop, '[%02d:%02d] %s has been revived (%s)' % (time_min, time_sec, name_dst, revival_loc)])
+
 
 
     output = [output[idx][1] for idx in np.argsort(np.array([out[0] for out in output]))]
